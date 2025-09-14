@@ -49,6 +49,37 @@ This system addresses the limitations of Excel-based bus terminal operations by 
 
 ## Getting Started
 
+### Commit Message Format
+Follow **Conventional Commits** standard:
+
+| Type | Purpose | Example |
+|------|---------|---------|
+| `feat` | Add a new feature (functions, logic) | `feat(solver): implement A* search algorithm` |
+| `fix` | Fix a bug (incorrect output, logic errors) | `fix(heuristic): correct Manhattan distance calculation` |
+| `refactor` | Improve code without changing behavior | `refactor(state): optimize state representation` |
+| `perf` | Optimize performance (faster loops, better memory) | `perf(pruning): improve deadlock detection speed` |
+| `style` | Formatting changes (indentation, comments) | `style: fix indentation in SokoBot.java` |
+| `test` | Add or update test cases | `test: add edge case tests for corner situations` |
+| `build` | Modify build files or compilation setup | `build: update batch files with new parameters` |
+| `docs` | Update README, specs, or comments | `docs: update algorithm description in README` |
+| `chore` | Non-code maintenance (renaming files) | `chore: update .gitignore for IDE files` |
+
+**Format:**
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+### Team Collaboration Guidelines
+* Each member must understand all project aspects
+* Individual explanations required for submitted work
+* Collaborative development encouraged for optimal performance
+
+
 **Note: Setup instructions will be added as technology decisions are finalized**
 
 ## Documentation
