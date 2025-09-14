@@ -47,45 +47,67 @@ This system addresses the limitations of Excel-based bus terminal operations by 
 
 ## Technology Stack
 
+## Current Status
+
 ## Getting Started
+
+**Note: Setup instructions will be added as technology decisions are finalized**
+
+### Current Repository Structure
+```
+bus-terminal-management/
+├── docs/
+│   └── proposal.md          # Approved project proposal
+├── .gitignore              # Git ignore rules
+└── README.md               # This file
+```
+
+### Next Steps for Team
+1. **Week 4-5:** Finalize technology stack decisions
+2. **Week 6-7:** Set up development environment and database
+3. **Week 8+:** Begin implementation according to proposal
+
+## Development Guidelines
 
 ### Commit Message Format
 Follow **Conventional Commits** standard:
 
 | Type | Purpose | Example |
 |------|---------|---------|
-| `feat` | Add a new feature (functions, logic) | `feat(solver): implement A* search algorithm` |
-| `fix` | Fix a bug (incorrect output, logic errors) | `fix(heuristic): correct Manhattan distance calculation` |
-| `refactor` | Improve code without changing behavior | `refactor(state): optimize state representation` |
-| `perf` | Optimize performance (faster loops, better memory) | `perf(pruning): improve deadlock detection speed` |
-| `style` | Formatting changes (indentation, comments) | `style: fix indentation in SokoBot.java` |
-| `test` | Add or update test cases | `test: add edge case tests for corner situations` |
-| `build` | Modify build files or compilation setup | `build: update batch files with new parameters` |
-| `docs` | Update README, specs, or comments | `docs: update algorithm description in README` |
-| `chore` | Non-code maintenance (renaming files) | `chore: update .gitignore for IDE files` |
+| `feat` | Add new feature (records, transactions, reports) | `feat: implement ticket purchase transaction` |
+| `fix` | Fix bugs (database errors, logic issues) | `fix: correct fare calculation with discounts` |
+| `refactor` | Improve code without changing behavior | `refactor: optimize database connection handling` |
+| `perf` | Optimize performance (faster queries, better memory) | `perf: improve route search query speed` |
+| `style` | Formatting changes (indentation, comments) | `style: fix indentation in TicketDAO.java` |
+| `test` | Add or update test cases | `test: add validation tests for bus capacity limits` |
+| `build` | Modify build files or compilation setup | `build: update Maven dependencies for JDBC` |
+| `docs` | Update README, specs, or comments | `docs: update database schema documentation` |
+| `chore` | Non-code maintenance (renaming files, config) | `chore: update .gitignore for database files` |
 
 **Format:**
-
 ```
-<type>(<scope>): <description>
-
+<type>: <description>
 [optional body]
-
 [optional footer]
 ```
 
-### Team Collaboration Guidelines
-* Each member must understand all project aspects
-* Individual explanations required for submitted work
-* Collaborative development encouraged for optimal performance
+### Proposal Requirements (Must Implement)
+- **Minimum 4 core record tables** with full CRUD operations
+- **4 transactions** as specified in approved proposal  
+- **4 reports** with time dimensions (Year/Month filtering)
+- **3-tier architecture** implementation
+- **Minimum 10 records per table** for demonstration
 
+### Team Responsibilities
+Each member is assigned specific components as per the approved proposal. See proposal document for detailed breakdown.
 
-**Note: Setup instructions will be added as technology decisions are finalized**
+## Notes
 
-## Documentation
+This README will be updated as the project develops. Currently, only the proposal has been finalized and approved by Professor Francia.
 
-## Project Timeline
+For the most up-to-date project requirements, refer to the approved proposal document.
 
 ---
 
 **Last Updated:** September 2025  
+**Project Status:** Proposal Approved - Development Phase Starting
