@@ -1,8 +1,8 @@
 # CCINFOM Database Application Project Proposal
-**Version 1.0, subject to minor revisions**  
+**Version 1.1, subject to minor revisions**  
 **Bus Terminal Management System**  
 **AY 2025-2026, Term 1**  
-*approved 2025-09-17*
+*initially approved 2025-09-17*
 
 ## Section 1.0: Group Composition
 - **GUARIN, Raine Louise R.**
@@ -18,8 +18,8 @@ Bus terminal operations require coordinated management of routes, passenger book
 |-|-|-|-|
 |Terminal Record Management|terminal_id <br> terminal_name <br> location <br> city<br>phone<br>operating_hours<br> | Viewing a terminal record and the list of all bus routes operating from that terminal.| GUARIN, Raine Louise R.
 |Bus Record Management|bus_id<br>bus_number<br>capacity<br>bus_type<br>current_terminal<br>status|Viewing a bus record and the list of all trips completed by that bus.| RANARA, Ramil Carlos B.
-|Ticket Record Management| ticket_id<br>route_id<br>bus_id<br>departure_date<br>departure_time<br>fare_amount<br>is_discounted<br>final_amt<br>booking_date<br>status| Viewing a ticket record and the associated departure details with route and bus information | MIRANDA, Bien Aouien C.
-|Route Record Management|route_id<br>route_name<br>origin_terminal<br>destination_terminal<br>distance<br>travel_time<br>base_fare<br>|Viewing a route record and the list of scheduled departures for that route|INFANTE, Charles Sebastian V.
+|Staff Record Management| staff_id<br>staff_name<br>role<br>assigned_terminal<br>assigned_bus<br>shift<br>contact<br>| Viewing a member of staff and the list of assigned bus and terminals | MIRANDA, Bien Aouien C.
+|Route Record Management|route_id<br>route_name<br>origin_id<br>destination_id<br>distance<br>travel_time<br>base_fare<br>|Viewing a route record and the list of scheduled departures for that route|INFANTE, Charles Sebastian V.
 
 
 ## Section 4.0: Transactions
