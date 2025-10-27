@@ -36,20 +36,6 @@ CREATE TABLE Route (
 );
 
 -- =====================================================
--- 4.0 Table: Schedule
--- A schedule defines the route and time details
--- =====================================================
-CREATE TABLE Schedule (
-    schedule_id INT PRIMARY KEY AUTO_INCREMENT,
-    route_id INT NOT NULL,
-    departure_time DATETIME NOT NULL,
-    arrival_time DATETIME NOT NULL,
-    FOREIGN KEY (route_id) REFERENCES Route(route_id)
-        ON UPDATE CASCADE
-        ON DELETE CASCADE
-);
-
--- =====================================================
 -- 5.0 Table: Bus
 -- Each bus is linked to a predetermined schedule
 -- =====================================================
@@ -59,14 +45,34 @@ CREATE TABLE Bus (
     capacity INT NOT NULL DEFAULT 45,
     status ENUM('Available', 'In Transit', 'Scheduled', 'Maintenance') DEFAULT 'Available',
     current_terminal INT,
-    schedule_id INT,  -- predetermined schedule
+    route_id INT,  -- predetermined route
     FOREIGN KEY (current_terminal) REFERENCES Terminal(terminal_id)
         ON UPDATE CASCADE
         ON DELETE SET NULL,
-    FOREIGN KEY (schedule_id) REFERENCES Schedule(schedule_id)
+    FOREIGN KEY (route_id) REFERENCES Route(route_id)
         ON UPDATE CASCADE
         ON DELETE SET NULL
 );
+
+-- =====================================================
+-- 4.0 Table: Schedule
+-- A schedule defines the route and time details
+-- =====================================================
+
+CREATE TABLE Schedule (
+    schedule_id INT PRIMARY KEY AUTO_INCREMENT,
+    bus_id INT NOT NULL,
+    departure_datetime DATETIME NOT NULL,
+    expected_arrival DATETIME,
+    actual_departure DATETIME,
+    actual_arrival DATETIME,
+    status ENUM('Scheduled', 'Departed', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
+    FOREIGN KEY (bus_id) REFERENCES Bus(bus_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+
 
 -- =====================================================
 -- 6.0 Table: Staff
@@ -100,12 +106,21 @@ CREATE TABLE Ticket (
     type ENUM('Regular', 'Discounted', 'Free') DEFAULT 'Regular', 
     discount DECIMAL(10,2) DEFAULT 20.00,  -- Discount is 20%
     final_amount DECIMAL(10,2),
+    route_id  INT,
+    staff_id INT,
     FOREIGN KEY (bus_id) REFERENCES Bus(bus_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE,
     FOREIGN KEY (schedule_id) REFERENCES Schedule(schedule_id)
         ON UPDATE CASCADE
+        ON DELETE CASCADE,
+	FOREIGN KEY (staff_id) REFERENCES Staff(staff_id)
+		ON UPDATE CASCADE
+        ON DELETE CASCADE,
+	FOREIGN KEY (route_id) REFERENCES Route(route_id)
+		ON UPDATE CASCADE
         ON DELETE CASCADE
+	
 );
 
 -- =====================================================
@@ -121,4 +136,8 @@ CREATE TABLE Maintenance (
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
+
+
+-- drop database bus_terminal_management;
+
 
