@@ -62,17 +62,13 @@ CREATE TABLE Bus (
 CREATE TABLE Schedule (
     schedule_id INT PRIMARY KEY AUTO_INCREMENT,
     bus_id INT NOT NULL,
-    departure_datetime DATETIME NOT NULL,
-    expected_arrival DATETIME,
-    actual_departure DATETIME,
-    actual_arrival DATETIME,
+    departure_time DATETIME,
+    arrival_time DATETIME,
     status ENUM('Scheduled', 'Departed', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
     FOREIGN KEY (bus_id) REFERENCES Bus(bus_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
-
-
 
 -- =====================================================
 -- 6.0 Table: Staff
@@ -120,7 +116,6 @@ CREATE TABLE Ticket (
 	FOREIGN KEY (route_id) REFERENCES Route(route_id)
 		ON UPDATE CASCADE
         ON DELETE CASCADE
-	
 );
 
 -- =====================================================
@@ -136,8 +131,5 @@ CREATE TABLE Maintenance (
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
-
-
--- drop database bus_terminal_management;
 
 
