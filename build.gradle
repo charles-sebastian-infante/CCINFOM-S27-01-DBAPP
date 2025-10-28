@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+    id 'war'
+}
+
+group = 'com.busterminal'
+version = '1.0.0'
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // MySQL Connector
+    implementation 'mysql:mysql-connector-java:8.0.33'
+    
+    // Servlet API (provided by Tomcat)
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
+    compileOnly 'javax.servlet.jsp:javax.servlet.jsp-api:2.3.1'
+    compileOnly 'javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:1.2.1'
+    
+    // Testing (optional)
+    testImplementation 'junit:junit:4.13.2'
+}
+
+// Configure WAR packaging
+war {
+    archiveFileName = 'bus_terminal_app.war'
+}
+
+// Compile Java task
+tasks.named('compileJava') {
+    options.encoding = 'UTF-8'
+    options.deprecation = true
+}
+
+// Custom task to display classpath (for debugging)
+task showClasspath {
+    doLast {
+        println "Classpath:"
+        configurations.runtimeClasspath.each { println "  - " + it }
+    }
+}
+
+// Custom task to clean build
+task cleanBuild {
+    doLast {
+        delete 'build'
+        println "Build directory cleaned"
+    }
+}
