@@ -108,4 +108,24 @@ public class Bus {
             return 0;
         }
     }
+
+    public static void main(String args[]) {
+        // --- TEST CODE (no constructor used) ---
+        Bus a = new Bus();
+
+        a.busNumber = "Bus-111";
+        a.capacity = 45;
+        a.status = "Available"; // must not be NULL
+        a.currentTerminal = 1; // must exist in Terminal table
+        a.routeID = 1; // must exist in Route table (if foreign key)
+
+        int result = a.addRecord();
+
+        if (result == 1)
+            System.out.println(" Added");
+        else
+            System.out.println(" Failed");
+
+    }
+    
 }
