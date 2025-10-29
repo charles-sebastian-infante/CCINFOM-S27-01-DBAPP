@@ -3,15 +3,27 @@ import java.sql.*;
 
 public class DBConnection {
     private static final String URL = 
-        "jdbc:mysql://localhost:3306/bus_terminal_management";
-    private static final String USER = "root";
-    private static final String PASSWORD = "12345678";
+        "jdbc:mysql://localhost:3306/bus_terminal_management?useSSL=false&serverTimezone=UTC";
+    private static final String USER = "root"; // only change this 
+    private static final String PASSWORD = "password"; // and this - Aouien
 
-    public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(
-            URL + "?useTimezone=true&serverTimezone=UTC&useSSL=false",
-            USER,
-            PASSWORD
-        );
+    public static Connection getConnection() {
+        Connection conn = null;
+        try {
+            // Explicitly load the MySQL JDBC driver
+            Class.forName("com.mysql.cj.jdbc.Driver");
+
+            // Establish connection
+            conn = DriverManager.getConnection(URL, USER, PASSWORD);
+
+        } catch (ClassNotFoundException e) {
+            System.out.println(" MySQL JDBC Driver not found!");
+            e.printStackTrace();
+        } catch (SQLException e) {
+            System.out.println(" SQL Connection Error: " + e.getMessage());
+            e.printStackTrace();
+        }
+
+        return conn;
     }
 }
