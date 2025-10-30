@@ -21,7 +21,7 @@ public class Bus {
         try {
             Connection conn = DBConnection.getConnection();
             PreparedStatement pStmt = conn.prepareStatement(
-                "INSERT INTO Bus rbus_number, capacity, status, " +
+                "INSERT INTO Bus bus_number, capacity, status, " +
                 "current_terminal) VALUES (?,?,?,?)"
             );
             pStmt.setString(1, busNumber);
