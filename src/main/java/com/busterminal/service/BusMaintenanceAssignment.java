@@ -39,7 +39,6 @@ public class BusMaintenanceAssignment {
                 bus.capacity = rs.getInt("capacity");
                 bus.status = rs.getString("status");
                 bus.currentTerminal = rs.getInt("current_terminal");
-                bus.routeID = rs.getInt("route_id");
                 availableBuses.add(bus);
             }
 
