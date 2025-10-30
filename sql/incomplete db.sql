@@ -45,11 +45,7 @@ CREATE TABLE Bus (
     capacity INT NOT NULL DEFAULT 45,
     status ENUM('Available', 'In Transit', 'Scheduled', 'Maintenance') DEFAULT 'Available',
     current_terminal INT,
-    route_id INT,  -- predetermined route
     FOREIGN KEY (current_terminal) REFERENCES Terminal(terminal_id)
-        ON UPDATE CASCADE
-        ON DELETE SET NULL,
-    FOREIGN KEY (route_id) REFERENCES Route(route_id)
         ON UPDATE CASCADE
         ON DELETE SET NULL
 );
@@ -62,10 +58,14 @@ CREATE TABLE Bus (
 CREATE TABLE Schedule (
     schedule_id INT PRIMARY KEY AUTO_INCREMENT,
     bus_id INT NOT NULL,
+	route_id INT NOT NULL,
     departure_time DATETIME,
     arrival_time DATETIME,
     status ENUM('Scheduled', 'Departed', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
     FOREIGN KEY (bus_id) REFERENCES Bus(bus_id)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+	FOREIGN KEY (route_id) REFERENCES Route(route_id)
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
@@ -131,5 +131,6 @@ CREATE TABLE Maintenance (
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );
+
 
 
