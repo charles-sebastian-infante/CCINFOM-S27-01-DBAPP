@@ -95,6 +95,8 @@ public class ScheduleController extends HttpServlet {
             schedule.departureTime = request.getParameter("departureTime");
             schedule.arrivalTime = request.getParameter("arrivalTime");
             schedule.status = request.getParameter("status");
+            schedule.routeID = Integer.parseInt(request
+                .getParameter("routeID"));
             
             if(schedule.addRecord() == 1) {
                 response.sendRedirect("schedule?action=list");
@@ -121,6 +123,8 @@ public class ScheduleController extends HttpServlet {
             schedule.departureTime = request.getParameter("departureTime");
             schedule.arrivalTime = request.getParameter("arrivalTime");
             schedule.status = request.getParameter("status");
+            schedule.routeID = Integer.parseInt(request
+                .getParameter("routeID"));
             
             if(schedule.modRecord() == 1) {
                 response.sendRedirect("schedule?action=list");

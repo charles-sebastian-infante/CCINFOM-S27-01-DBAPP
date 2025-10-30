@@ -80,25 +80,27 @@ public class BusMaintenanceAssignment {
             return false;
         }
     }
-    
-   public int assignRoute() {
-        selectedBus.routeID = assignedRoute.routeID;
-        selectedBus.status = "Scheduled";
-        return selectedBus.modRecord();
-    }
-    
+        
    public int createSchedule(String departureTime, String arrivalTime) {
         try {
             Connection conn = DBConnection.getConnection();
             PreparedStatement pStmt = conn.prepareStatement(
                 "INSERT INTO Schedule (bus_id, departure_time, arrival_time," +
-                " status) VALUES (?,?,?,'Scheduled')"
+                " status) VALUES (?,?,?,'Scheduled',?)"
             );
             pStmt.setInt(1, selectedBus.busID);
             pStmt.setString(2, departureTime);
             pStmt.setString(3, arrivalTime);
+            pStmt.setInt(4, assignedRoute.routeID);
             pStmt.executeUpdate();
+
+            PreparedStatement pStmt2 = conn.prepareStatement(
+                "UPDATE Bus SET status = 'Scheduled' WHERE bus_id = ?");
+            pStmt2.setInt(1, selectedBus.busID);
+            pStmt2.executeUpdate();
+
             pStmt.close();
+            pStmt2.close();
             conn.close();
             return 1;
         } catch (SQLException e) {

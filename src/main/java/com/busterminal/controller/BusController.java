@@ -54,7 +54,6 @@ public class BusController extends HttpServlet {
                 b.capacity = rs.getInt("capacity");
                 b.status = rs.getString("status");
                 b.currentTerminal = rs.getInt("current_terminal");
-                b.routeID = rs.getInt("route_id");
                 buses.add(b);
             }
             
@@ -95,7 +94,6 @@ public class BusController extends HttpServlet {
             bus.status = request.getParameter("status");
             bus.currentTerminal = Integer.parseInt(request
                 .getParameter("currentTerminal"));
-            bus.routeID = Integer.parseInt(request.getParameter("routeID"));
             
             if(bus.addRecord() == 1) {
                 response.sendRedirect("bus?action=list");
@@ -122,7 +120,6 @@ public class BusController extends HttpServlet {
             bus.status = request.getParameter("status");
             bus.currentTerminal = Integer.parseInt(request
                 .getParameter("currentTerminal"));
-            bus.routeID = Integer.parseInt(request.getParameter("routeID"));
             
             if(bus.modRecord() == 1) {
                 response.sendRedirect("bus?action=list");
