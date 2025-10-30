@@ -1,0 +1,19 @@
+h1{
+    color:black;
+    font-size:50px;
+    margin-top:0px;
+    margin-bottom:20px;
+}
+
+h2{
+    color:black;
+    font-size:20px;
+    margin-top:5px;
+    margin-bottom:20px;
+}
+
+body {
+    font-family:'Arial', sans-serif;
+    margin:0px;
+}
+
