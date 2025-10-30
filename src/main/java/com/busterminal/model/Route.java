@@ -7,7 +7,7 @@ public class Route {
     public int routeId;
     public String routeName;
     public int originId;
-    int destinationID;
+    public int destinationID;
     public double distance;
     public String travelTime;
     public double baseFare;
