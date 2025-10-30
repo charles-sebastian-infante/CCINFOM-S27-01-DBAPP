@@ -62,3 +62,12 @@ npm-debug.log
 .classpath
 .project
 .settings/
+
+# Tomcat server folders
+
+# IntelliJ Plugin
+.smarttomcat/
+
+# Eclipse Tomcat
+.metadata/
+Servers/
