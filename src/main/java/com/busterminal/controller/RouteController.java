@@ -49,9 +49,9 @@ public class RouteController extends HttpServlet {
             List<Route> routes = new ArrayList<>();
             while(rs.next()) {
                 Route r = new Route();
-                r.routeId = rs.getInt("route_id");
+                r.routeID = rs.getInt("route_id");
                 r.routeName = rs.getString("route_name");
-                r.originId = rs.getInt("origin_id");
+                r.originID = rs.getInt("origin_id");
                 r.destinationID = rs.getInt("destination_id");
                 r.distance = rs.getDouble("distance");
                 r.travelTime = rs.getString("travel_time");
@@ -72,7 +72,7 @@ public class RouteController extends HttpServlet {
         HttpServletResponse response) throws ServletException, IOException {
         try {
             Route route = new Route();
-            route.routeId = Integer.parseInt(request.getParameter("id"));
+            route.routeID = Integer.parseInt(request.getParameter("id"));
             
             if(route.getRecord() == 1) {
                 request.setAttribute("route", route);
@@ -92,7 +92,7 @@ public class RouteController extends HttpServlet {
         try {
             Route route = new Route();
             route.routeName = request.getParameter("routeName");
-            route.originId = Integer.parseInt(request
+            route.originID = Integer.parseInt(request
                 .getParameter("originID"));
             route.destinationID = Integer.parseInt(request
                 .getParameter("destinationID"));
@@ -121,9 +121,9 @@ public class RouteController extends HttpServlet {
         HttpServletResponse response) throws ServletException, IOException {
         try {
             Route route = new Route();
-            route.routeId = Integer.parseInt(request.getParameter("routeID"));
+            route.routeID = Integer.parseInt(request.getParameter("routeID"));
             route.routeName = request.getParameter("routeName");
-            route.originId = Integer.parseInt(request
+            route.originID = Integer.parseInt(request
                 .getParameter("originID"));
             route.destinationID = Integer.parseInt(request
                 .getParameter("destinationID"));
@@ -153,7 +153,7 @@ public class RouteController extends HttpServlet {
         HttpServletResponse response) throws ServletException, IOException {
         try {
             Route route = new Route();
-            route.routeId = Integer.parseInt(request.getParameter("id"));
+            route.routeID = Integer.parseInt(request.getParameter("id"));
             
             if(route.delRecord() == 1) {
                 response.sendRedirect("route?action=list");

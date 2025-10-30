@@ -4,18 +4,18 @@ import java.sql.*;
 import com.busterminal.utils.DBConnection;
 
 public class Route {
-    public int routeId;
+    public int routeID;
     public String routeName;
-    public int originId;
+    public int originID;
     public int destinationID;
     public double distance;
     public String travelTime;
     public double baseFare;
 
     public Route() {
-        routeId = 0;
+        routeID = 0;
         routeName = "";
-        originId = 0;
+        originID = 0;
         destinationID = 0;
         distance = 0.0;
         travelTime = "";
@@ -29,7 +29,7 @@ public class Route {
                 "INSERT INTO Route (route_name, origin_id, destination_id," +
                 " distance, travel_time, base_fare) VALUES (?,?,?,?,?,?)");
             pStmt.setString(1, routeName);
-            pStmt.setInt(2, originId);
+            pStmt.setInt(2, originID);
             pStmt.setInt(3, destinationID);
             pStmt.setDouble(4, distance);
             pStmt.setString(5, travelTime);
@@ -49,15 +49,15 @@ public class Route {
             Connection conn = DBConnection.getConnection();
             PreparedStatement pStmt = conn.prepareStatement(
                 "UPDATE Route SET route_name = ?, origin_id = ?," +
-                " destination_id = ?," + " distance = ?, travel_time = ?," +
-                " base_fare = ?, WHERE route_id = ?");
+                " destination_id = ?, distance = ?, travel_time = ?," +
+                " base_fare = ? WHERE route_id = ?");
             pStmt.setString(1, routeName);
-            pStmt.setInt(2, originId);
+            pStmt.setInt(2, originID);
             pStmt.setInt(3, destinationID);
             pStmt.setDouble(4, distance);
             pStmt.setString(5, travelTime);
             pStmt.setDouble(6, baseFare);
-            pStmt.setInt(7, routeId);
+            pStmt.setInt(7, routeID);
             pStmt.executeUpdate();
             pStmt.close();
             conn.close();
@@ -73,7 +73,7 @@ public class Route {
             Connection conn = DBConnection.getConnection();
             PreparedStatement pStmt = conn.prepareStatement(
                 "DELETE FROM Route WHERE route_id = ?");
-            pStmt.setInt(1, routeId);
+            pStmt.setInt(1, routeID);
             pStmt.executeUpdate();
             pStmt.close();
             conn.close();
@@ -90,21 +90,21 @@ public class Route {
             Connection conn = DBConnection.getConnection();
             PreparedStatement pStmt = conn.prepareStatement(
                 "SELECT * FROM Route WHERE route_id = ?");
-            pStmt.setInt(1, routeId);
+            pStmt.setInt(1, routeID);
             ResultSet rs = pStmt.executeQuery();
             
-            routeId = 0;
+            routeID = 0;
             routeName = "";
-            originId = 0;
+            originID = 0;
             destinationID = 0;
             distance = 0.0;
             travelTime = "";
             baseFare = 0.0;
 
             while (rs.next()) {
-                routeId = rs.getInt("route_id");
+                routeID = rs.getInt("route_id");
                 routeName = rs.getString("route_name");
-                originId = rs.getInt("origin_id");
+                originID = rs.getInt("origin_id");
                 destinationID = rs.getInt("destination_id");
                 distance = rs.getDouble("distance");
                 travelTime = rs.getString("travel_time");

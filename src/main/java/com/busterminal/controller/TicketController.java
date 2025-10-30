@@ -56,7 +56,7 @@ public class TicketController extends HttpServlet {
                 .getParameter("scheduleID"));
             String ticketType = request.getParameter("ticketType");
             
-            service.selectedRoute.routeId = routeID;
+            service.selectedRoute.routeID = routeID;
             service.selectedRoute.getRecord();
             
             Ticket ticket = new Ticket();

@@ -22,7 +22,7 @@ public class Terminal {
         try {
             Connection conn = DBConnection.getConnection();
             PreparedStatement pStmt = conn.prepareStatement(
-                "INSERT INTO Terminal (terminal_name, location, city, phone" +
+                "INSERT INTO Terminal (terminal_name, location, city, phone)" +
                 " VALUES (?,?,?,?)");
             pStmt.setString(1, terminalName);
             pStmt.setString(2, location);

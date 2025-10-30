@@ -61,7 +61,7 @@ public class Ticket {
                 "UPDATE Ticket SET ticket_number = ?, bus_id = ?," + 
                 " schedule_id = ?, departure_date = ?, type = ?," +
                 " discount = ?, final_amount = ?, route_id = ?," +
-                " staff_id = ?, WHERE ticket_id = ?");
+                " staff_id = ? WHERE ticket_id = ?");
             pStmt.setString(1, ticketNumber);
             pStmt.setInt(2, busID);
             pStmt.setInt(3, scheduleID);
@@ -87,7 +87,7 @@ public class Ticket {
             Connection conn = DBConnection.getConnection();
             PreparedStatement pStmt = conn.prepareStatement(
                 "DELETE FROM Ticket WHERE ticket_id = ?");
-            pStmt.setInt(10, ticketID);
+            pStmt.setInt(1, ticketID);
             pStmt.executeUpdate();
             pStmt.close();
             conn.close();
@@ -124,7 +124,7 @@ public class Ticket {
                 scheduleID = rs.getInt("schedule_id");
                 departureDate = rs.getString("departure_date");
                 type = rs.getString("type");
-                discount = rs.getDouble("final_amount");
+                discount = rs.getDouble("discount");
                 finalAmount = rs.getDouble("final_amount");
                 routeID = rs.getInt("route_id");
                 staffID = rs.getInt("staff_id");

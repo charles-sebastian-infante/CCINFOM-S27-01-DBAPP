@@ -16,7 +16,7 @@ public class BusMaintenanceAssignment {
     }
     
    public int loadRoute(int routeID) {
-        assignedRoute.routeId = routeID;
+        assignedRoute.routeID = routeID;
         return assignedRoute.getRecord();
     }
     
@@ -82,7 +82,7 @@ public class BusMaintenanceAssignment {
     }
     
    public int assignRoute() {
-        selectedBus.routeID = assignedRoute.routeId;
+        selectedBus.routeID = assignedRoute.routeID;
         selectedBus.status = "Scheduled";
         return selectedBus.modRecord();
     }
