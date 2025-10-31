@@ -60,7 +60,7 @@ public class RouteController extends HttpServlet {
             }
             
             request.setAttribute("routes", routes);
-            request.getRequestDispatcher("/admin/manage_route.jsp")
+            request.getRequestDispatcher("/admin/manage_routes.jsp")
                 .forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -76,7 +76,7 @@ public class RouteController extends HttpServlet {
             
             if(route.getRecord() == 1) {
                 request.setAttribute("route", route);
-                request.getRequestDispatcher("/admin/manage_route.jsp")
+                request.getRequestDispatcher("/admin/manage_routes.jsp")
                     .forward(request, response);
             } else {
                 response.sendRedirect("route?action=list");
@@ -106,13 +106,13 @@ public class RouteController extends HttpServlet {
                 response.sendRedirect("route?action=list");
             } else {
                 request.setAttribute("error", "Failed to add route");
-                request.getRequestDispatcher("/admin/manage_route.jsp")
+                request.getRequestDispatcher("/admin/manage_routes.jsp")
                     .forward(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Error: " + e.getMessage());
-            request.getRequestDispatcher("/admin/manage_route.jsp")
+            request.getRequestDispatcher("/admin/manage_routes.jsp")
                 .forward(request, response);
         }
     }
@@ -138,13 +138,13 @@ public class RouteController extends HttpServlet {
             } else {
                 request.setAttribute("error", "Failed to update route");
                 request.setAttribute("route", route);
-                request.getRequestDispatcher("/admin/manage_route.jsp")
+                request.getRequestDispatcher("/admin/manage_routes.jsp")
                     .forward(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Error: " + e.getMessage());
-            request.getRequestDispatcher("/admin/manage_route.jsp")
+            request.getRequestDispatcher("/admin/manage_routes.jsp")
                 .forward(request, response);
         }
     }

@@ -26,9 +26,8 @@ public class BusUtilizationReport {
     }
     
    public int generateReport() {
-        try {
-            Connection conn = DBConnection.getConnection();            
-            PreparedStatement pStmt = conn.prepareStatement(
+        try (Connection conn = DBConnection.getConnection();            
+             PreparedStatement pStmt = conn.prepareStatement(
                 "SELECT b.bus_id, b.bus_number, b.capacity, " +
                 "       COUNT(DISTINCT s.schedule_id) as trip_count, " +
                 "       COUNT(tk.ticket_id) as total_passengers, " +
@@ -42,8 +41,7 @@ public class BusUtilizationReport {
                 "AND s.status IN ('Departed', 'Completed') " +
                 "AND (tk.type IS NULL OR tk.type != 'Cancelled') " +
                 "GROUP BY b.bus_id, b.bus_number, b.capacity " +
-                "ORDER BY utilization_rate DESC"
-            );
+                "ORDER BY utilization_rate DESC")) {
 
             pStmt.setInt(1, reportYear);
             pStmt.setInt(2, reportMonth);
@@ -63,9 +61,6 @@ public class BusUtilizationReport {
             }
 
             rs.close();
-            pStmt.close();
-            conn.close();
-
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());

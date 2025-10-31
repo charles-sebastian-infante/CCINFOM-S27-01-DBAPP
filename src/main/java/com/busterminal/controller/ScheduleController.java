@@ -56,6 +56,7 @@ public class ScheduleController extends HttpServlet {
                 sch.departureTime = rs.getString("departure_time");
                 sch.arrivalTime = rs.getString("arrival_time");
                 sch.status = rs.getString("status");
+                sch.routeID = rs.getInt("route_id");
                 schedules.add(sch);
             }
             

@@ -21,13 +21,12 @@ public class BusMaintenanceAssignment {
     }
     
    public int findAvailableBuses(int requiredCapacity) {
-        try {
-            Connection conn = DBConnection.getConnection();
-            PreparedStatement pStmt = conn.prepareStatement(
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pStmt = conn.prepareStatement(
                 "SELECT * FROM Bus " +
                 "WHERE status = 'Available' " +
                 "AND capacity >= ? " +
-                "ORDER BY capacity");
+                "ORDER BY capacity")) {
             pStmt.setInt(1, requiredCapacity);
             ResultSet rs = pStmt.executeQuery();            
             availableBuses.clear();
@@ -41,11 +40,7 @@ public class BusMaintenanceAssignment {
                 bus.currentTerminal = rs.getInt("current_terminal");
                 availableBuses.add(bus);
             }
-
             rs.close();
-            pStmt.close();
-            conn.close();
-
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -54,13 +49,12 @@ public class BusMaintenanceAssignment {
     }
     
    public boolean checkScheduleConflicts(int busID, String departureTime) {
-        try {
-            Connection conn = DBConnection.getConnection();
-            PreparedStatement pStmt = conn.prepareStatement(
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pStmt = conn.prepareStatement(
                 "SELECT COUNT(*) as conflicts FROM Schedule " +
                 "WHERE bus_id = ? " +
                 "AND departure_time = ? " +
-                "AND status IN ('Scheduled', 'Departed')");
+                "AND status IN ('Scheduled', 'Departed')")) {
             pStmt.setInt(1, busID);
             pStmt.setString(2, departureTime);
             ResultSet rs = pStmt.executeQuery();
@@ -70,9 +64,6 @@ public class BusMaintenanceAssignment {
                 conflicts = rs.getInt("conflicts");
 
             rs.close();
-            pStmt.close();
-            conn.close();
-            
             return conflicts == 0;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -81,26 +72,24 @@ public class BusMaintenanceAssignment {
     }
         
    public int createSchedule(String departureTime, String arrivalTime) {
-        try {
-            Connection conn = DBConnection.getConnection();
-            PreparedStatement pStmt = conn.prepareStatement(
-                "INSERT INTO Schedule (bus_id, departure_time, arrival_time," +
-                " status) VALUES (?,?,?,'Scheduled',?)"
-            );
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement pStmt = conn.prepareStatement(
+                "INSERT INTO Schedule (bus_id, departure_time, arrival_time, status, route_id) " +
+                "VALUES (?,?,?,?,?)")) {
+            
             pStmt.setInt(1, selectedBus.busID);
             pStmt.setString(2, departureTime);
             pStmt.setString(3, arrivalTime);
-            pStmt.setInt(4, assignedRoute.routeID);
+            pStmt.setString(4, "Scheduled");
+            pStmt.setInt(5, assignedRoute.routeID);
             pStmt.executeUpdate();
 
-            PreparedStatement pStmt2 = conn.prepareStatement(
-                "UPDATE Bus SET status = 'Scheduled' WHERE bus_id = ?");
-            pStmt2.setInt(1, selectedBus.busID);
-            pStmt2.executeUpdate();
-
-            pStmt.close();
-            pStmt2.close();
-            conn.close();
+            try (PreparedStatement pStmt2 = conn.prepareStatement(
+                "UPDATE Bus SET status = 'Scheduled' WHERE bus_id = ?")) {
+                pStmt2.setInt(1, selectedBus.busID);
+                pStmt2.executeUpdate();
+            }
+            
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());

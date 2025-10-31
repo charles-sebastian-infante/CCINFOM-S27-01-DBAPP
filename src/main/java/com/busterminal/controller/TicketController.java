@@ -59,11 +59,11 @@ public class TicketController extends HttpServlet {
             service.selectedRoute.routeID = routeID;
             service.selectedRoute.getRecord();
             
-            Ticket ticket = new Ticket();
-            ticket.routeID = routeID;
-            ticket.scheduleID = scheduleID;
-            ticket.type = ticketType;
-            ticket.finalAmount = service.calculatePrice(
+            // Set up the service's ticket (not a separate one)
+            service.newTicket.routeID = routeID;
+            service.newTicket.scheduleID = scheduleID;
+            service.newTicket.type = ticketType;
+            service.newTicket.finalAmount = service.calculatePrice(
                 service.selectedRoute.baseFare, 
                 ticketType, 
                 20.0
@@ -72,7 +72,7 @@ public class TicketController extends HttpServlet {
             if(service.confirmPurchase() == 1) {
                 request.setAttribute(
                     "success", "Ticket purchased successfully!");
-                request.setAttribute("ticket", ticket);
+                request.setAttribute("ticket", service.newTicket);
                 request.getRequestDispatcher("/user/ticket_details.jsp")
                     .forward(request, response);
             } else {

@@ -25,9 +25,8 @@ public class RevenueReport {
     }
     
    public int generateReport() {
-        try {
-            Connection conn = DBConnection.getConnection(); 
-            PreparedStatement pStmt = conn.prepareStatement(
+        try (Connection conn = DBConnection.getConnection(); 
+             PreparedStatement pStmt = conn.prepareStatement(
                 "SELECT t.terminal_id, t.terminal_name, t.city, " +
                 "       SUM(tk.final_amount) as total_sales, " +
                 "       AVG(tk.final_amount) as avg_sales, " +
@@ -39,7 +38,7 @@ public class RevenueReport {
                 "AND MONTH(tk.departure_date) = ? " +
                 "AND tk.type != 'Cancelled' " +
                 "GROUP BY t.terminal_id, t.terminal_name, t.city " +
-                "ORDER BY total_sales DESC");
+                "ORDER BY total_sales DESC")) {
             pStmt.setInt(1, reportYear);
             pStmt.setInt(2, reportMonth);
             ResultSet rs = pStmt.executeQuery(); 
@@ -57,8 +56,6 @@ public class RevenueReport {
             }
 
             rs.close();
-            pStmt.close();
-            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
