@@ -54,3 +54,16 @@ task cleanBuild {
         println "Build directory cleaned"
     }
 }
+
+task deploy(type: Exec) {
+    dependsOn 'build'
+    commandLine 'bash', '-c', '''
+        catalina stop || true
+        rm -rf "$CATALINA_HOME/webapps/bus_terminal_app"*
+        cp build/libs/bus_terminal_app.war "$CATALINA_HOME/webapps/"
+        catalina start
+        sleep 5
+        open "http://localhost:8080/bus_terminal_app"
+    '''
+}
+
