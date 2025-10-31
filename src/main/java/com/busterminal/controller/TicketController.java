@@ -4,7 +4,6 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.WebServlet;
 import com.busterminal.model.Ticket;
-import com.busterminal.model.Schedule;
 import com.busterminal.service.TicketPurchaseService;
 import com.busterminal.service.TicketCancellation;
 import com.busterminal.utils.DBConnection;
@@ -60,29 +59,20 @@ public class TicketController extends HttpServlet {
             service.selectedRoute.routeID = routeID;
             service.selectedRoute.getRecord();
             
-            // Get busID from schedule
-            Schedule schedule = new Schedule();
-            schedule.scheduleID = scheduleID;
-            schedule.getRecord();
-            
-            // Set up the service's ticket with ALL required fields
-            service.newTicket.routeID = routeID;
-            service.newTicket.scheduleID = scheduleID;
-            service.newTicket.busID = schedule.busID;  // FIX: Get from schedule
-            service.newTicket.type = ticketType;
-            service.newTicket.departureDate = request.getParameter("departureDate"); // FIX: Get from form
-            service.newTicket.staffID = 1; // FIX: Default staff or get from session
-            service.newTicket.discount = ticketType.equals("Discounted") ? 20.0 : 0.0; // FIX: Set discount
-            service.newTicket.finalAmount = service.calculatePrice(
+            Ticket ticket = new Ticket();
+            ticket.routeID = routeID;
+            ticket.scheduleID = scheduleID;
+            ticket.type = ticketType;
+            ticket.finalAmount = service.calculatePrice(
                 service.selectedRoute.baseFare, 
                 ticketType, 
-                service.newTicket.discount
+                20.0
             );
             
             if(service.confirmPurchase() == 1) {
                 request.setAttribute(
                     "success", "Ticket purchased successfully!");
-                request.setAttribute("ticket", service.newTicket);
+                request.setAttribute("ticket", ticket);
                 request.getRequestDispatcher("/user/ticket_details.jsp")
                     .forward(request, response);
             } else {

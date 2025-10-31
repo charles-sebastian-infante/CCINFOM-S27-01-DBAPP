@@ -27,8 +27,9 @@ public class RoutePerformanceReport {
     }
     
    public int generateReport() {
-        try (Connection conn = DBConnection.getConnection();            
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();            
+            PreparedStatement pStmt = conn.prepareStatement(
                 "SELECT r.route_id, r.route_name, r.base_fare, " +
                 "       t1.city as origin_city, t2.city as destination_city, " +
                 "       COUNT(tk.ticket_id) as passenger_count, " +
@@ -41,7 +42,8 @@ public class RoutePerformanceReport {
                 "AND MONTH(tk.departure_date) = ? " +
                 "AND tk.type != 'Cancelled' " +
                 "GROUP BY r.route_id, r.route_name, r.base_fare, t1.city, t2.city " +
-                "ORDER BY passenger_count DESC")) {
+                "ORDER BY passenger_count DESC"
+            );
             pStmt.setInt(1, reportYear);
             pStmt.setInt(2, reportMonth);
             ResultSet rs = pStmt.executeQuery(); 
@@ -60,6 +62,8 @@ public class RoutePerformanceReport {
             }
 
             rs.close();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());

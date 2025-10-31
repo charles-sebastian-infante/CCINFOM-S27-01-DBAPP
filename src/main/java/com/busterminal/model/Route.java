@@ -23,10 +23,11 @@ public class Route {
     }
 
     public int addRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "INSERT INTO Route (route_name, origin_id, destination_id," +
-                " distance, travel_time, base_fare) VALUES (?,?,?,?,?,?)")) {
+                " distance, travel_time, base_fare) VALUES (?,?,?,?,?,?)");
             pStmt.setString(1, routeName);
             pStmt.setInt(2, originID);
             pStmt.setInt(3, destinationID);
@@ -34,6 +35,8 @@ public class Route {
             pStmt.setString(5, travelTime);
             pStmt.setDouble(6, baseFare);
             pStmt.executeUpdate();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -42,11 +45,12 @@ public class Route {
     }
 
     public int modRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "UPDATE Route SET route_name = ?, origin_id = ?," +
                 " destination_id = ?, distance = ?, travel_time = ?," +
-                " base_fare = ? WHERE route_id = ?")) {
+                " base_fare = ? WHERE route_id = ?");
             pStmt.setString(1, routeName);
             pStmt.setInt(2, originID);
             pStmt.setInt(3, destinationID);
@@ -55,6 +59,8 @@ public class Route {
             pStmt.setDouble(6, baseFare);
             pStmt.setInt(7, routeID);
             pStmt.executeUpdate();
+            pStmt.close();
+            conn.close();
             return 1; 
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -63,11 +69,14 @@ public class Route {
     }
 
     public int delRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
-                "DELETE FROM Route WHERE route_id = ?")) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "DELETE FROM Route WHERE route_id = ?");
             pStmt.setInt(1, routeID);
             pStmt.executeUpdate();
+            pStmt.close();
+            conn.close();
             return 1;  
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -77,9 +86,10 @@ public class Route {
     }
 
     public int getRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
-                "SELECT * FROM Route WHERE route_id = ?")) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "SELECT * FROM Route WHERE route_id = ?");
             pStmt.setInt(1, routeID);
             ResultSet rs = pStmt.executeQuery();
             
@@ -101,6 +111,8 @@ public class Route {
                 baseFare = rs.getDouble("base_fare");
             }
             rs.close();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());

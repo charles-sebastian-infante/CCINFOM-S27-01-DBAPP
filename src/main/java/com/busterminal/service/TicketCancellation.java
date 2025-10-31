@@ -23,10 +23,11 @@ public class TicketCancellation {
     }
     
    public boolean checkEligibility() {
-        try (Connection conn = DBConnection.getConnection(); 
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection(); 
+            PreparedStatement pStmt = conn.prepareStatement(
                 "SELECT s.departure_time FROM Schedule s " +
-                "WHERE s.schedule_id = ?")) {
+                "WHERE s.schedule_id = ?");
             pStmt.setInt(1, originalTicket.scheduleID);
             ResultSet rs = pStmt.executeQuery();
             
@@ -48,6 +49,9 @@ public class TicketCancellation {
             }
 
             rs.close();
+            pStmt.close();
+            conn.close();
+            
             return eligibleForCancellation;
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -68,13 +72,17 @@ public class TicketCancellation {
         if (!eligibleForCancellation) 
             return 0;
         
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "UPDATE Ticket SET type = 'Cancelled', final_amount = ?" +
-                " WHERE ticket_id = ?")) {
+                " WHERE ticket_id = ?");
             pStmt.setDouble(1, -refundAmount); 
             pStmt.setInt(2, originalTicket.ticketID);
             pStmt.executeUpdate();
+            pStmt.close();
+            conn.close();
+            
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());

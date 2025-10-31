@@ -77,11 +77,11 @@ public class BusController extends HttpServlet {
                 request.getRequestDispatcher("/admin/manage_bus.jsp")
                     .forward(request, response);
             } else {
-                response.sendRedirect(request.getContextPath() + "/bus?action=list");
+                response.sendRedirect("bus?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/bus?action=list");
+            response.sendRedirect("bus?action=list");
         }
     }
     
@@ -96,7 +96,7 @@ public class BusController extends HttpServlet {
                 .getParameter("currentTerminal"));
             
             if(bus.addRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/bus?action=list");
+                response.sendRedirect("bus?action=list");
             } else {
                 request.setAttribute("error", "Failed to add bus");
                 request.getRequestDispatcher("/admin/manage_bus.jsp")
@@ -122,7 +122,7 @@ public class BusController extends HttpServlet {
                 .getParameter("currentTerminal"));
             
             if(bus.modRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/bus?action=list");
+                response.sendRedirect("bus?action=list");
             } else {
                 request.setAttribute("error", "Failed to update bus");
                 request.setAttribute("bus", bus);
@@ -144,14 +144,14 @@ public class BusController extends HttpServlet {
             bus.busID = Integer.parseInt(request.getParameter("id"));
             
             if(bus.delRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/bus?action=list");
+                response.sendRedirect("bus?action=list");
             } else {
                 request.setAttribute("error", "Failed to delete bus");
-                response.sendRedirect(request.getContextPath() + "/bus?action=list");
+                response.sendRedirect("bus?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/bus?action=list");
+            response.sendRedirect("bus?action=list");
         }
     }
 }

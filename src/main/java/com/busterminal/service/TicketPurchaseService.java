@@ -16,13 +16,15 @@ public class TicketPurchaseService {
     }
     
    public int loadAvailableSchedules(int routeID, String travelDate) {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "SELECT s.* FROM Schedule s " +
                 "JOIN Bus b ON s.bus_id = b.bus_id " +
                 "WHERE b.route_id = ? " +
                 "AND DATE(s.departure_time) = ? " +
-                "AND s.status = 'Scheduled'")) {
+                "AND s.status = 'Scheduled'"
+            );
             pStmt.setInt(1, routeID);
             pStmt.setString(2, travelDate);
             ResultSet rs = pStmt.executeQuery();            
@@ -39,6 +41,9 @@ public class TicketPurchaseService {
             }
 
             rs.close();
+            pStmt.close();
+            conn.close();
+
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -47,35 +52,40 @@ public class TicketPurchaseService {
     }
     
    public int checkAvailability(int scheduleID) {
-        try (Connection conn = DBConnection.getConnection()) {
+        try {
+            Connection conn = DBConnection.getConnection(); 
 
-            try (PreparedStatement pStmt1 = conn.prepareStatement(
+            PreparedStatement pStmt1 = conn.prepareStatement(
                 "SELECT b.capacity FROM Bus b " +
                 "JOIN Schedule s ON b.bus_id = s.bus_id " +
-                "WHERE s.schedule_id = ?")) {
-                pStmt1.setInt(1, scheduleID);
-                ResultSet rs1 = pStmt1.executeQuery();
-                int capacity = 0;
+                "WHERE s.schedule_id = ?"
+            );
+            pStmt1.setInt(1, scheduleID);
+            ResultSet rs1 = pStmt1.executeQuery();
+            int capacity = 0;
 
-                if (rs1.next()) 
-                    capacity = rs1.getInt("capacity");
+            if (rs1.next()) 
+                capacity = rs1.getInt("capacity");
 
-                rs1.close();
-                
-                try (PreparedStatement pStmt2 = conn.prepareStatement(
-                    "SELECT COUNT(*) as sold FROM Ticket WHERE schedule_id = ?")) {
+            rs1.close();
+            pStmt1.close();
+            
+            PreparedStatement pStmt2 = conn.prepareStatement(
+                "SELECT COUNT(*) as sold FROM Ticket WHERE schedule_id = ?"
+            );
 
-                    pStmt2.setInt(1, scheduleID);
-                    ResultSet rs2 = pStmt2.executeQuery();
-                    int sold = 0;
+            pStmt2.setInt(1, scheduleID);
+            ResultSet rs2 = pStmt2.executeQuery();
+            int sold = 0;
 
-                    if (rs2.next()) 
-                        sold = rs2.getInt("sold");
+            if (rs2.next()) 
+                sold = rs2.getInt("sold");
 
-                    rs2.close();
-                    return capacity - sold;
-                }
-            }
+            rs2.close();
+            pStmt2.close();
+            conn.close();
+            
+            return capacity - sold;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             return -1;

@@ -29,11 +29,12 @@ public class Ticket {
     }
 
     public int addRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "INSERT INTO Ticket (ticket_number, bus_id, schedule_id" +
                 ", departure_date, type, discount, final_amount, route_id" +
-                ", staff_id) VALUES (?,?,?,?,?,?,?,?,?)")) {
+                ", staff_id) VALUES (?,?,?,?,?,?,?,?,?)");
             pStmt.setString(1, ticketNumber);
             pStmt.setInt(2, busID);
             pStmt.setInt(3, scheduleID);
@@ -44,6 +45,8 @@ public class Ticket {
             pStmt.setInt(8, routeID);
             pStmt.setInt(9, staffID);
             pStmt.executeUpdate();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -52,12 +55,13 @@ public class Ticket {
     }
 
     public int modRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "UPDATE Ticket SET ticket_number = ?, bus_id = ?," + 
                 " schedule_id = ?, departure_date = ?, type = ?," +
                 " discount = ?, final_amount = ?, route_id = ?," +
-                " staff_id = ? WHERE ticket_id = ?")) {
+                " staff_id = ? WHERE ticket_id = ?");
             pStmt.setString(1, ticketNumber);
             pStmt.setInt(2, busID);
             pStmt.setInt(3, scheduleID);
@@ -69,6 +73,8 @@ public class Ticket {
             pStmt.setInt(9, staffID);
             pStmt.setInt(10, ticketID);
             pStmt.executeUpdate();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -77,11 +83,14 @@ public class Ticket {
     }
 
     public int delRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
-                "DELETE FROM Ticket WHERE ticket_id = ?")) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "DELETE FROM Ticket WHERE ticket_id = ?");
             pStmt.setInt(1, ticketID);
             pStmt.executeUpdate();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -90,9 +99,10 @@ public class Ticket {
     }
 
     public int getRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
-                "SELECT * FROM Ticket WHERE ticket_id = ?")) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "SELECT * FROM Ticket WHERE ticket_id = ?");
             pStmt.setInt(1, ticketID);
             ResultSet rs = pStmt.executeQuery();
 
@@ -121,10 +131,15 @@ public class Ticket {
             }
             
             rs.close();
+            pStmt.close();
+            conn.close();
+
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             return 0;
         }
     }
+
+
 }

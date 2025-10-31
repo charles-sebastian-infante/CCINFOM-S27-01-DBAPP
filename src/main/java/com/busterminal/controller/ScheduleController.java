@@ -56,7 +56,6 @@ public class ScheduleController extends HttpServlet {
                 sch.departureTime = rs.getString("departure_time");
                 sch.arrivalTime = rs.getString("arrival_time");
                 sch.status = rs.getString("status");
-                sch.routeID = rs.getInt("route_id");
                 schedules.add(sch);
             }
             
@@ -80,11 +79,11 @@ public class ScheduleController extends HttpServlet {
                 request.getRequestDispatcher("/admin/schedule.jsp")
                     .forward(request, response);
             } else {
-                response.sendRedirect(request.getContextPath() + "/schedule?action=list");
+                response.sendRedirect("schedule?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/schedule?action=list");
+            response.sendRedirect("schedule?action=list");
         }
     }
     
@@ -100,7 +99,7 @@ public class ScheduleController extends HttpServlet {
                 .getParameter("routeID"));
             
             if(schedule.addRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/schedule?action=list");
+                response.sendRedirect("schedule?action=list");
             } else {
                 request.setAttribute("error", "Failed to add schedule");
                 request.getRequestDispatcher("/admin/schedule.jsp")
@@ -128,7 +127,7 @@ public class ScheduleController extends HttpServlet {
                 .getParameter("routeID"));
             
             if(schedule.modRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/schedule?action=list");
+                response.sendRedirect("schedule?action=list");
             } else {
                 request.setAttribute("error", "Failed to update schedule");
                 request.setAttribute("schedule", schedule);
@@ -150,14 +149,14 @@ public class ScheduleController extends HttpServlet {
             schedule.scheduleID = Integer.parseInt(request.getParameter("id"));
             
             if(schedule.delRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/schedule?action=list");
+                response.sendRedirect("schedule?action=list");
             } else {
                 request.setAttribute("error", "Failed to delete schedule");
-                response.sendRedirect(request.getContextPath() + "/schedule?action=list");
+                response.sendRedirect("schedule?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/schedule?action=list");
+            response.sendRedirect("schedule?action=list");
         }
     }
 }

@@ -19,15 +19,18 @@ public class Terminal {
     }
 
     public int addRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "INSERT INTO Terminal (terminal_name, location, city, phone)" +
-                " VALUES (?,?,?,?)")) {
+                " VALUES (?,?,?,?)");
             pStmt.setString(1, terminalName);
             pStmt.setString(2, location);
             pStmt.setString(3, city);
             pStmt.setString(4, phone);
             pStmt.executeUpdate();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -36,16 +39,19 @@ public class Terminal {
     }
 
     public int modRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "UPDATE Terminal SET terminal_name = ?,  location = ?, " + 
-                "city = ?, phone = ? WHERE terminal_id = ?")) {
+                "city = ?, phone = ? WHERE terminal_id = ?");
             pStmt.setString(1, terminalName);
             pStmt.setString(2, location);
             pStmt.setString(3, city);
             pStmt.setString(4, phone);
             pStmt.setInt(5, terminalID);
             pStmt.executeUpdate();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -54,11 +60,14 @@ public class Terminal {
     }
 
     public int delRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
-                "DELETE FROM Terminal WHERE terminal_id = ?")) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "DELETE FROM Terminal WHERE terminal_id = ?");
             pStmt.setInt(1, terminalID);
             pStmt.executeUpdate();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -67,9 +76,10 @@ public class Terminal {
     }
 
     public int getRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
-                "SELECT * FROM Terminal WHERE terminal_id = ?")) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "SELECT * FROM Terminal WHERE terminal_id = ?");
             pStmt.setInt(1, terminalID);
             ResultSet rs = pStmt.executeQuery();
 
@@ -88,6 +98,8 @@ public class Terminal {
             }
 
             rs.close();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());

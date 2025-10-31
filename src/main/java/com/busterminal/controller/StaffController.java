@@ -79,11 +79,11 @@ public class StaffController extends HttpServlet {
                 request.getRequestDispatcher("/admin/manage_staff.jsp")
                     .forward(request, response);
             } else {
-                response.sendRedirect(request.getContextPath() + "/staff?action=list");
+                response.sendRedirect("staff?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/staff?action=list");
+            response.sendRedirect("staff?action=list");
         }
     }
     
@@ -101,7 +101,7 @@ public class StaffController extends HttpServlet {
             staff.contact = request.getParameter("contact");
             
             if(staff.addRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/staff?action=list");
+                response.sendRedirect("staff?action=list");
             } else {
                 request.setAttribute("error", "Failed to add staff");
                 request.getRequestDispatcher("/admin/manage_staff.jsp")
@@ -130,7 +130,7 @@ public class StaffController extends HttpServlet {
             staff.contact = request.getParameter("contact");
             
             if(staff.modRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/staff?action=list");
+                response.sendRedirect("staff?action=list");
             } else {
                 request.setAttribute("error", "Failed to update staff");
                 request.setAttribute("staff", staff);
@@ -153,14 +153,14 @@ public class StaffController extends HttpServlet {
             staff.staffID = Integer.parseInt(request.getParameter("id"));
             
             if(staff.delRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/staff?action=list");
+                response.sendRedirect("staff?action=list");
             } else {
                 request.setAttribute("error", "Failed to delete staff");
-                response.sendRedirect(request.getContextPath() + "/staff?action=list");
+                response.sendRedirect("staff?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/staff?action=list");
+            response.sendRedirect("staff?action=list");
         }
     }
 }

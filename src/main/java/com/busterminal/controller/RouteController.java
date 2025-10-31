@@ -60,7 +60,7 @@ public class RouteController extends HttpServlet {
             }
             
             request.setAttribute("routes", routes);
-            request.getRequestDispatcher("/admin/manage_routes.jsp")
+            request.getRequestDispatcher("/admin/manage_route.jsp")
                 .forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -76,14 +76,14 @@ public class RouteController extends HttpServlet {
             
             if(route.getRecord() == 1) {
                 request.setAttribute("route", route);
-                request.getRequestDispatcher("/admin/manage_routes.jsp")
+                request.getRequestDispatcher("/admin/manage_route.jsp")
                     .forward(request, response);
             } else {
-                response.sendRedirect(request.getContextPath() + "/route?action=list");
+                response.sendRedirect("route?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/route?action=list");
+            response.sendRedirect("route?action=list");
         }
     }
     
@@ -103,16 +103,16 @@ public class RouteController extends HttpServlet {
                 .getParameter("baseFare"));
             
             if(route.addRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/route?action=list");
+                response.sendRedirect("route?action=list");
             } else {
                 request.setAttribute("error", "Failed to add route");
-                request.getRequestDispatcher("/admin/manage_routes.jsp")
+                request.getRequestDispatcher("/admin/manage_route.jsp")
                     .forward(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Error: " + e.getMessage());
-            request.getRequestDispatcher("/admin/manage_routes.jsp")
+            request.getRequestDispatcher("/admin/manage_route.jsp")
                 .forward(request, response);
         }
     }
@@ -134,17 +134,17 @@ public class RouteController extends HttpServlet {
                 .getParameter("baseFare"));
             
             if(route.modRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/route?action=list");
+                response.sendRedirect("route?action=list");
             } else {
                 request.setAttribute("error", "Failed to update route");
                 request.setAttribute("route", route);
-                request.getRequestDispatcher("/admin/manage_routes.jsp")
+                request.getRequestDispatcher("/admin/manage_route.jsp")
                     .forward(request, response);
             }
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Error: " + e.getMessage());
-            request.getRequestDispatcher("/admin/manage_routes.jsp")
+            request.getRequestDispatcher("/admin/manage_route.jsp")
                 .forward(request, response);
         }
     }
@@ -156,14 +156,14 @@ public class RouteController extends HttpServlet {
             route.routeID = Integer.parseInt(request.getParameter("id"));
             
             if(route.delRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/route?action=list");
+                response.sendRedirect("route?action=list");
             } else {
                 request.setAttribute("error", "Failed to delete route");
-                response.sendRedirect(request.getContextPath() + "/route?action=list");
+                response.sendRedirect("route?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/route?action=list");
+            response.sendRedirect("route?action=list");
         }
     }
 }

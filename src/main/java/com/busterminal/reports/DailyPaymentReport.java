@@ -27,8 +27,9 @@ public class DailyPaymentReport {
     }
     
    public int generateReport() {
-        try (Connection conn = DBConnection.getConnection(); 
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection(); 
+            PreparedStatement pStmt = conn.prepareStatement(
                 "SELECT DATE(departure_date) as payment_date, " +
                 "       SUM(CASE WHEN type = 'Regular' THEN 1 ELSE 0 END) as regular_count, " +
                 "       SUM(CASE WHEN type = 'Regular' THEN final_amount ELSE 0 END) as regular_total, " +
@@ -42,7 +43,8 @@ public class DailyPaymentReport {
                 "AND MONTH(departure_date) = ? " +
                 "AND type != 'Cancelled' " +
                 "GROUP BY DATE(departure_date) " +
-                "ORDER BY payment_date")) {
+                "ORDER BY payment_date"
+            );
             pStmt.setInt(1, reportYear);
             pStmt.setInt(2, reportMonth);
             ResultSet rs = pStmt.executeQuery(); 
@@ -62,6 +64,9 @@ public class DailyPaymentReport {
             }
 
             rs.close();
+            pStmt.close();
+            conn.close();
+
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());

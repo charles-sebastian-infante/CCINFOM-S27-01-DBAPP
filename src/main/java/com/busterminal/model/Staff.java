@@ -23,10 +23,11 @@ public class Staff {
     }
     
    public int addRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "INSERT INTO Staff (staff_name, role, assigned_terminal," +
-                " assigned_bus, shift, contact) VALUES (?,?,?,?,?,?)")) {
+                " assigned_bus, shift, contact) VALUES (?,?,?,?,?,?)");
             pStmt.setString(1, staffName);
             pStmt.setString(2, role);
             pStmt.setInt(3, assignedTerminal);
@@ -34,6 +35,8 @@ public class Staff {
             pStmt.setString(5, shift);
             pStmt.setString(6, contact);
             pStmt.executeUpdate();   
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());  
@@ -42,11 +45,12 @@ public class Staff {
     }
     
    public int modRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "UPDATE Staff SET staff_name = ?, role = ?," +
                 " assigned_terminal = ?, assigned_bus = ?, shift = ?, " +
-                " contact = ? WHERE staff_id = ?")) {
+                " contact = ? WHERE staff_id = ?");
             pStmt.setString(1, staffName);
             pStmt.setString(2, role);
             pStmt.setInt(3, assignedTerminal);
@@ -55,6 +59,8 @@ public class Staff {
             pStmt.setString(6, contact);
             pStmt.setInt(7, staffID);
             pStmt.executeUpdate();   
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());  
@@ -63,11 +69,14 @@ public class Staff {
     }
     
    public int delRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
-                "DELETE FROM Staff WHERE staff_id = ?")) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "DELETE FROM Staff WHERE staff_id = ?");
             pStmt.setInt(1, staffID);
             pStmt.executeUpdate();   
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());  
@@ -76,9 +85,10 @@ public class Staff {
     }
     
    public int getRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
-                "SELECT * FROM Staff WHERE staff_id = ?")) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "SELECT * FROM Staff WHERE staff_id = ?");
             pStmt.setInt(1, staffID);
             ResultSet rs = pStmt.executeQuery();
             
@@ -100,6 +110,8 @@ public class Staff {
                 contact = rs.getString("contact");
             }
             rs.close();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());  

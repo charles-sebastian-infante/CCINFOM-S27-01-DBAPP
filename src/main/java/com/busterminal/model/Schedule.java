@@ -21,16 +21,19 @@ public class Schedule {
     }
     
    public int addRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "INSERT INTO Schedule (bus_id, departure_time, arrival_time," +
-                " status, route_id) VALUES (?,?,?,?,?)")) {
+                " status, route_id) VALUES (?,?,?,?,?)");
             pStmt.setInt(1, busID);
             pStmt.setString(2, departureTime);
             pStmt.setString(3, arrivalTime);
             pStmt.setString(4, status);
             pStmt.setInt(5, routeID);
             pStmt.executeUpdate();   
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());  
@@ -39,11 +42,12 @@ public class Schedule {
     }
     
    public int modRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "UPDATE Schedule SET bus_id = ?, departure_time = ?, " +
                 "arrival_time = ?, status = ?, route_id = ? " +
-                "WHERE schedule_id = ?")) {
+                "WHERE schedule_id = ?");
             pStmt.setInt(1, busID);
             pStmt.setString(2, departureTime);
             pStmt.setString(3, arrivalTime);
@@ -51,6 +55,8 @@ public class Schedule {
             pStmt.setInt(5, routeID);
             pStmt.setInt(6, scheduleID);
             pStmt.executeUpdate();   
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());  
@@ -59,11 +65,14 @@ public class Schedule {
     }
     
    public int delRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
-                "DELETE FROM Schedule WHERE schedule_id = ?")) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "DELETE FROM Schedule WHERE schedule_id = ?");
             pStmt.setInt(1, scheduleID);
             pStmt.executeUpdate();   
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());  
@@ -72,9 +81,10 @@ public class Schedule {
     }
     
    public int getRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
-                "SELECT * FROM Schedule WHERE schedule_id = ?")) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "SELECT * FROM Schedule WHERE schedule_id = ?");
             pStmt.setInt(1, scheduleID);
             ResultSet rs = pStmt.executeQuery();
             
@@ -94,6 +104,8 @@ public class Schedule {
                 routeID = rs.getInt("route_id");
             }
             rs.close();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());  

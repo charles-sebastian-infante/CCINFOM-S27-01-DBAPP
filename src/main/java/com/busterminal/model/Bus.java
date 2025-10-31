@@ -18,16 +18,19 @@ public class Bus {
     }
     
     public int addRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "INSERT INTO Bus (bus_number, capacity, status, " +
                 "current_terminal) VALUES (?,?,?,?)"
-            )) {
+            );
             pStmt.setString(1, busNumber);
             pStmt.setInt(2, capacity);
             pStmt.setString(3, status);
             pStmt.setInt(4, currentTerminal);
             pStmt.executeUpdate();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -36,17 +39,20 @@ public class Bus {
     }
     
     public int modRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
                 "UPDATE Bus SET bus_number = ?, capacity = ?, status = ?, " +
                 "current_terminal = ? WHERE bus_id = ?"
-            )) {
+            );
             pStmt.setString(1, busNumber);
             pStmt.setInt(2, capacity);
             pStmt.setString(3, status);
             pStmt.setInt(4, currentTerminal);
             pStmt.setInt(5, busID);
             pStmt.executeUpdate();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -55,11 +61,14 @@ public class Bus {
     }
     
     public int delRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
-                "DELETE FROM Bus WHERE bus_id = ?")) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "DELETE FROM Bus WHERE bus_id = ?");
             pStmt.setInt(1, busID);
             pStmt.executeUpdate();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -68,9 +77,10 @@ public class Bus {
     }
     
     public int getRecord() {
-        try (Connection conn = DBConnection.getConnection();
-             PreparedStatement pStmt = conn.prepareStatement(
-                "SELECT * FROM Bus WHERE bus_id = ?")) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "SELECT * FROM Bus WHERE bus_id = ?");
             pStmt.setInt(1, busID);
             ResultSet rs = pStmt.executeQuery();
             
@@ -88,6 +98,8 @@ public class Bus {
                 currentTerminal = rs.getInt("current_terminal");
             }
             rs.close();
+            pStmt.close();
+            conn.close();
             return 1;
         } catch (SQLException e) {
             System.out.println(e.getMessage());
@@ -96,16 +108,21 @@ public class Bus {
     }
 
     public static void main(String args[]) {
+        // --- TEST CODE (no constructor used) ---
         Bus a = new Bus();
+
         a.busNumber = "Bus-111";
         a.capacity = 45;
-        a.status = "Available";
-        a.currentTerminal = 1;
+        a.status = "Available"; // must not be NULL
+        a.currentTerminal = 1; // must exist in Terminal table
+
         int result = a.addRecord();
+
         if (result == 1)
             System.out.println(" Added");
         else
             System.out.println(" Failed");
+
     }
     
 }

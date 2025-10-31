@@ -77,64 +77,84 @@ public class TerminalController extends HttpServlet {
                 request.getRequestDispatcher("/admin/manage_terminals.jsp")
                     .forward(request, response);
             } else {
-                response.sendRedirect(request.getContextPath() + "/terminal?action=list");
+                response.sendRedirect("terminal?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/terminal?action=list");
+            response.sendRedirect("terminal?action=list");
         }
     }
     
     private void addTerminal(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
-        try {
-            Terminal terminal = new Terminal();
-            terminal.terminalName = request.getParameter("terminalName");
-            terminal.location = request.getParameter("location");
-            terminal.city = request.getParameter("city");
-            terminal.phone = request.getParameter("phone");
-            
-            if(terminal.addRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/terminal?action=list");
-            } else {
-                request.setAttribute("error", "Failed to add terminal");
+            HttpServletResponse response) throws ServletException, IOException {
+            try {
+                Terminal terminal = new Terminal();
+                terminal.terminalName = request.getParameter("terminalName");
+                terminal.location = request.getParameter("location");
+                terminal.city = request.getParameter("city");
+                terminal.phone = request.getParameter("phone");
+
+                // Prevent terminalName and phone being the same
+                if (terminal.terminalName != null && terminal.phone != null &&
+                    terminal.terminalName.trim().equals(terminal.phone.trim())) {
+                    request.setAttribute("error", "Terminal name and phone cannot be the same.");
+                    request.setAttribute("terminal", terminal);
+                    request.getRequestDispatcher("/admin/manage_terminals.jsp")
+                        .forward(request, response);
+                    return;
+                }
+                
+                if(terminal.addRecord() == 1) {
+                    response.sendRedirect(request.getContextPath() + "/terminal?action=list");
+                } else {
+                    request.setAttribute("error", "Failed to add terminal");
+                    request.getRequestDispatcher("/admin/manage_terminals.jsp")
+                        .forward(request, response);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                request.setAttribute("error", "Error: " + e.getMessage());
                 request.getRequestDispatcher("/admin/manage_terminals.jsp")
                     .forward(request, response);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Error: " + e.getMessage());
-            request.getRequestDispatcher("/admin/manage_terminals.jsp")
-                .forward(request, response);
         }
-    }
     
     private void updateTerminal(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
-        try {
-            Terminal terminal = new Terminal();
-            terminal.terminalID = Integer.parseInt(request
-                .getParameter("terminalID"));
-            terminal.terminalName = request.getParameter("terminalName");
-            terminal.location = request.getParameter("location");
-            terminal.city = request.getParameter("city");
-            terminal.phone = request.getParameter("phone");
-            
-            if(terminal.modRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/terminal?action=list");
-            } else {
-                request.setAttribute("error", "Failed to update terminal");
-                request.setAttribute("terminal", terminal);
+            HttpServletResponse response) throws ServletException, IOException {
+            try {
+                Terminal terminal = new Terminal();
+                terminal.terminalID = Integer.parseInt(request
+                    .getParameter("terminalID"));
+                terminal.terminalName = request.getParameter("terminalName");
+                terminal.location = request.getParameter("location");
+                terminal.city = request.getParameter("city");
+                terminal.phone = request.getParameter("phone");
+
+                // Prevent terminalName and phone being the same
+                if (terminal.terminalName != null && terminal.phone != null &&
+                    terminal.terminalName.trim().equals(terminal.phone.trim())) {
+                    request.setAttribute("error", "Terminal name and phone cannot be the same.");
+                    request.setAttribute("terminal", terminal);
+                    request.getRequestDispatcher("/admin/manage_terminals.jsp")
+                        .forward(request, response);
+                    return;
+                }
+                
+                if(terminal.modRecord() == 1) {
+                    response.sendRedirect(request.getContextPath() + "/terminal?action=list");
+                } else {
+                    request.setAttribute("error", "Failed to update terminal");
+                    request.setAttribute("terminal", terminal);
+                    request.getRequestDispatcher("/admin/manage_terminals.jsp")
+                        .forward(request, response);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                request.setAttribute("error", "Error: " + e.getMessage());
                 request.getRequestDispatcher("/admin/manage_terminals.jsp")
                     .forward(request, response);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Error: " + e.getMessage());
-            request.getRequestDispatcher("/admin/manage_terminals.jsp")
-                .forward(request, response);
         }
-    }
     
     private void deleteTerminal(HttpServletRequest request, 
         HttpServletResponse response) throws ServletException, IOException {
@@ -143,14 +163,14 @@ public class TerminalController extends HttpServlet {
             terminal.terminalID = Integer.parseInt(request.getParameter("id"));
             
             if(terminal.delRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/terminal?action=list");
+                response.sendRedirect("terminal?action=list");
             } else {
                 request.setAttribute("error", "Failed to delete terminal");
-                response.sendRedirect(request.getContextPath() + "/terminal?action=list");
+                response.sendRedirect("terminal?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/terminal?action=list");
+            response.sendRedirect("terminal?action=list");
         }
     }
 }
