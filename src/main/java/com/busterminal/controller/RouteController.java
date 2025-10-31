@@ -79,11 +79,11 @@ public class RouteController extends HttpServlet {
                 request.getRequestDispatcher("/admin/manage_routes.jsp")
                     .forward(request, response);
             } else {
-                response.sendRedirect("route?action=list");
+                response.sendRedirect(request.getContextPath() + "/route?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("route?action=list");
+            response.sendRedirect(request.getContextPath() + "/route?action=list");
         }
     }
     
@@ -103,7 +103,7 @@ public class RouteController extends HttpServlet {
                 .getParameter("baseFare"));
             
             if(route.addRecord() == 1) {
-                response.sendRedirect("route?action=list");
+                response.sendRedirect(request.getContextPath() + "/route?action=list");
             } else {
                 request.setAttribute("error", "Failed to add route");
                 request.getRequestDispatcher("/admin/manage_routes.jsp")
@@ -134,7 +134,7 @@ public class RouteController extends HttpServlet {
                 .getParameter("baseFare"));
             
             if(route.modRecord() == 1) {
-                response.sendRedirect("route?action=list");
+                response.sendRedirect(request.getContextPath() + "/route?action=list");
             } else {
                 request.setAttribute("error", "Failed to update route");
                 request.setAttribute("route", route);
@@ -156,14 +156,14 @@ public class RouteController extends HttpServlet {
             route.routeID = Integer.parseInt(request.getParameter("id"));
             
             if(route.delRecord() == 1) {
-                response.sendRedirect("route?action=list");
+                response.sendRedirect(request.getContextPath() + "/route?action=list");
             } else {
                 request.setAttribute("error", "Failed to delete route");
-                response.sendRedirect("route?action=list");
+                response.sendRedirect(request.getContextPath() + "/route?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("route?action=list");
+            response.sendRedirect(request.getContextPath() + "/route?action=list");
         }
     }
 }

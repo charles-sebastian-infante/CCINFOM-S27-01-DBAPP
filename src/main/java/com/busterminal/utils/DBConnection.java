@@ -5,10 +5,7 @@ public class DBConnection {
     private static final String URL = 
         "jdbc:mysql://localhost:3306/bus_terminal_management?useSSL=false&serverTimezone=UTC";
     private static final String USER = "root";
-    private static final String PASSWORD = System.getenv("DB_PASSWORD") != null 
-        ? System.getenv("DB_PASSWORD") 
-        : "password";
-
+    private static final String PASSWORD = "";
     public static Connection getConnection() {
         Connection conn = null;
         try {

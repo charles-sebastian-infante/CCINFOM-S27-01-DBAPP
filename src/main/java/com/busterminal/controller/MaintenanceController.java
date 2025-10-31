@@ -78,11 +78,11 @@ public class MaintenanceController extends HttpServlet {
                 request.getRequestDispatcher("/admin/maintenance.jsp")
                     .forward(request, response);
             } else {
-                response.sendRedirect("maintenance?action=list");
+                response.sendRedirect(request.getContextPath() + "/maintenance?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("maintenance?action=list");
+            response.sendRedirect(request.getContextPath() + "/maintenance?action=list");
         }
     }
     
@@ -98,7 +98,7 @@ public class MaintenanceController extends HttpServlet {
             maintenance.status = request.getParameter("status");
             
             if(maintenance.addRecord() == 1) {
-                response.sendRedirect("maintenance?action=list");
+                response.sendRedirect(request.getContextPath() + "/maintenance?action=list");
             } else {
                 request.setAttribute("error", "Failed to add maintenance");
                 request.getRequestDispatcher("/admin/maintenance.jsp")
@@ -126,7 +126,7 @@ public class MaintenanceController extends HttpServlet {
             maintenance.status = request.getParameter("status");
             
             if(maintenance.modRecord() == 1) {
-                response.sendRedirect("maintenance?action=list");
+                response.sendRedirect(request.getContextPath() + "/maintenance?action=list");
             } else {
                 request.setAttribute("error", "Failed to update maintenance");
                 request.setAttribute("maintenance", maintenance);
@@ -149,14 +149,14 @@ public class MaintenanceController extends HttpServlet {
                 .getParameter("id"));
             
             if(maintenance.delRecord() == 1) {
-                response.sendRedirect("maintenance?action=list");
+                response.sendRedirect(request.getContextPath() + "/maintenance?action=list");
             } else {
                 request.setAttribute("error", "Failed to delete maintenance");
-                response.sendRedirect("maintenance?action=list");
+                response.sendRedirect(request.getContextPath() + "/maintenance?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("maintenance?action=list");
+            response.sendRedirect(request.getContextPath() + "/maintenance?action=list");
         }
     }
 }

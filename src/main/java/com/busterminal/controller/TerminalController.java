@@ -77,11 +77,11 @@ public class TerminalController extends HttpServlet {
                 request.getRequestDispatcher("/admin/manage_terminals.jsp")
                     .forward(request, response);
             } else {
-                response.sendRedirect("terminal?action=list");
+                response.sendRedirect(request.getContextPath() + "/terminal?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("terminal?action=list");
+            response.sendRedirect(request.getContextPath() + "/terminal?action=list");
         }
     }
     
@@ -95,7 +95,7 @@ public class TerminalController extends HttpServlet {
             terminal.phone = request.getParameter("phone");
             
             if(terminal.addRecord() == 1) {
-                response.sendRedirect("terminal?action=list");
+                response.sendRedirect(request.getContextPath() + "/terminal?action=list");
             } else {
                 request.setAttribute("error", "Failed to add terminal");
                 request.getRequestDispatcher("/admin/manage_terminals.jsp")
@@ -121,7 +121,7 @@ public class TerminalController extends HttpServlet {
             terminal.phone = request.getParameter("phone");
             
             if(terminal.modRecord() == 1) {
-                response.sendRedirect("terminal?action=list");
+                response.sendRedirect(request.getContextPath() + "/terminal?action=list");
             } else {
                 request.setAttribute("error", "Failed to update terminal");
                 request.setAttribute("terminal", terminal);
@@ -143,14 +143,14 @@ public class TerminalController extends HttpServlet {
             terminal.terminalID = Integer.parseInt(request.getParameter("id"));
             
             if(terminal.delRecord() == 1) {
-                response.sendRedirect("terminal?action=list");
+                response.sendRedirect(request.getContextPath() + "/terminal?action=list");
             } else {
                 request.setAttribute("error", "Failed to delete terminal");
-                response.sendRedirect("terminal?action=list");
+                response.sendRedirect(request.getContextPath() + "/terminal?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect("terminal?action=list");
+            response.sendRedirect(request.getContextPath() + "/terminal?action=list");
         }
     }
 }
