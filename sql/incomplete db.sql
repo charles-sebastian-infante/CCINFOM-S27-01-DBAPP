@@ -118,7 +118,7 @@ CREATE TABLE Staff (
 CREATE TABLE Maintenance_Type (
     maintenance_type_id INT PRIMARY KEY AUTO_INCREMENT,
     type_name VARCHAR(100) NOT NULL UNIQUE,
-    maintenance_cost INT NOT NULL
+    maintenance_cost DECIMAL(10,2) NOT NULL
 );
 
 CREATE TABLE Maintenance (
@@ -139,4 +139,8 @@ CREATE TABLE Maintenance (
         ON DELETE CASCADE,
 	CHECK (completion_time IS NULL OR completion_time > starting_date)
 );
+
+
+
+
 
