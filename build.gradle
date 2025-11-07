@@ -55,15 +55,47 @@ task cleanBuild {
     }
 }
 
-task deploy(type: Exec) {
+task deploy {
     dependsOn 'build'
-    commandLine 'bash', '-c', '''
-        catalina stop || true
-        rm -rf "$CATALINA_HOME/webapps/bus_terminal_app"*
-        cp build/libs/bus_terminal_app.war "$CATALINA_HOME/webapps/"
-        catalina start
-        sleep 5
-        open "http://localhost:8080/bus_terminal_app"
-    '''
+    doLast {
+        String catalinaHome = System.getenv('CATALINA_HOME')
+        String os = System.getProperty('os.name').toLowerCase()
+        
+        if (!catalinaHome) {
+            throw new GradleException('CATALINA_HOME not set!')
+        }
+        
+        println "(^_^) Deploying to Tomcat 9"
+        
+        // Stop Tomcat first
+        println "(´；ω；`) Stopping Tomcat..."
+        if (os.contains('win')) {
+            "cmd /c ${catalinaHome}\\bin\\catalina.bat stop".execute().waitFor()
+        } else {
+            "bash ${catalinaHome}/bin/catalina.sh stop".execute().waitFor()
+        }
+        Thread.sleep(2000)
+        
+        // Clean old deployment
+        println "(´・ω・`) Cleaning old deployment..."
+        new File("$catalinaHome/webapps/bus_terminal_app").deleteDir()
+        new File("$catalinaHome/webapps/bus_terminal_app.war").delete()
+        Thread.sleep(1000)
+        
+        // Copy WAR
+        println "(´・ω・`) Deploying new WAR..."
+        def warFile = new File("build/libs/bus_terminal_app.war")
+        warFile.renameTo(new File("$catalinaHome/webapps/bus_terminal_app.war"))
+        
+        // Start Tomcat
+        println "(´▽`ノノ Starting Tomcat..."
+        if (os.contains('win')) {
+            "cmd /c ${catalinaHome}\\bin\\catalina.bat start".execute()
+        } else {
+            "bash ${catalinaHome}/bin/catalina.sh start".execute()
+        }
+        Thread.sleep(3000)
+        
+        println "(๑•́ ω •̀)و Done!"
+    }
 }
-

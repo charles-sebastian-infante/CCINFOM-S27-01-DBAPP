@@ -3,30 +3,23 @@ import java.sql.*;
 import java.util.*;
 import com.busterminal.utils.DBConnection;
 
-public class Terminal {
-    public int terminalID;
-    public String terminalName;
-    public String address;
-    public String phone;
+public class Role {
+    public int roleID;
+    public String roleName;
     
-    public Terminal() {
-        terminalID = 0;
-        terminalName = "";
-        address = "";
-        phone = "";
+    public Role() {
+        roleID = 0;
+        roleName = "";
     }
     
     public int addRecord() {
         try {
             Connection conn = DBConnection.getConnection();
             PreparedStatement pStmt = conn.prepareStatement(
-                "INSERT INTO Terminal (terminal_name, address, phone) " +
-                "VALUES (?,?,?)",
+                "INSERT INTO Role (role_name) VALUES (?)",
                 Statement.RETURN_GENERATED_KEYS
             );
-            pStmt.setString(1, terminalName);
-            pStmt.setString(2, address);
-            pStmt.setString(3, phone);
+            pStmt.setString(1, roleName);
             
             int affectedRows = pStmt.executeUpdate();
             
@@ -36,7 +29,7 @@ public class Terminal {
             
             try (ResultSet generatedKeys = pStmt.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
-                    terminalID = generatedKeys.getInt(1);
+                    roleID = generatedKeys.getInt(1);
                 }
             }
             
@@ -53,13 +46,10 @@ public class Terminal {
         try {
             Connection conn = DBConnection.getConnection();
             PreparedStatement pStmt = conn.prepareStatement(
-                "UPDATE Terminal SET terminal_name = ?, address = ?, " +
-                "phone = ? WHERE terminal_id = ?"
+                "UPDATE Role SET role_name = ? WHERE role_id = ?"
             );
-            pStmt.setString(1, terminalName);
-            pStmt.setString(2, address);
-            pStmt.setString(3, phone);
-            pStmt.setInt(4, terminalID);
+            pStmt.setString(1, roleName);
+            pStmt.setInt(2, roleID);
             pStmt.executeUpdate();
             pStmt.close();
             conn.close();
@@ -74,8 +64,8 @@ public class Terminal {
         try {
             Connection conn = DBConnection.getConnection();
             PreparedStatement pStmt = conn.prepareStatement(
-                "DELETE FROM Terminal WHERE terminal_id = ?");
-            pStmt.setInt(1, terminalID);
+                "DELETE FROM Role WHERE role_id = ?");
+            pStmt.setInt(1, roleID);
             pStmt.executeUpdate();
             pStmt.close();
             conn.close();
@@ -90,20 +80,16 @@ public class Terminal {
         try {
             Connection conn = DBConnection.getConnection();
             PreparedStatement pStmt = conn.prepareStatement(
-                "SELECT * FROM Terminal WHERE terminal_id = ?");
-            pStmt.setInt(1, terminalID);
+                "SELECT * FROM Role WHERE role_id = ?");
+            pStmt.setInt(1, roleID);
             ResultSet rs = pStmt.executeQuery();
             
-            terminalID = 0;
-            terminalName = "";
-            address = "";
-            phone = "";
+            roleID = 0;
+            roleName = "";
             
             while (rs.next()) {
-                terminalID = rs.getInt("terminal_id");
-                terminalName = rs.getString("terminal_name");
-                address = rs.getString("address");
-                phone = rs.getString("phone");
+                roleID = rs.getInt("role_id");
+                roleName = rs.getString("role_name");
             }
             rs.close();
             pStmt.close();
@@ -115,22 +101,20 @@ public class Terminal {
         }
     }
     
-    // Get all terminals method
-    public static List<Terminal> getAllTerminals() {
-        List<Terminal> terminals = new ArrayList<>();
+    // Get all roles method
+    public static List<Role> getAllRoles() {
+        List<Role> roles = new ArrayList<>();
         try {
             Connection conn = DBConnection.getConnection();
             PreparedStatement pStmt = conn.prepareStatement(
-                "SELECT * FROM Terminal");
+                "SELECT * FROM Role");
             ResultSet rs = pStmt.executeQuery();
             
             while (rs.next()) {
-                Terminal t = new Terminal();
-                t.terminalID = rs.getInt("terminal_id");
-                t.terminalName = rs.getString("terminal_name");
-                t.address = rs.getString("address");
-                t.phone = rs.getString("phone");
-                terminals.add(t);
+                Role r = new Role();
+                r.roleID = rs.getInt("role_id");
+                r.roleName = rs.getString("role_name");
+                roles.add(r);
             }
             rs.close();
             pStmt.close();
@@ -138,6 +122,6 @@ public class Terminal {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
         }
-        return terminals;
+        return roles;
     }
 }

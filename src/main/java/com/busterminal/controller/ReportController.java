@@ -3,159 +3,275 @@ package com.busterminal.controller;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.WebServlet;
-import com.busterminal.reports.*;
+import com.busterminal.service.ReportService;
+import com.busterminal.model.*;
 import java.io.IOException;
+import java.util.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Calendar;
 
-@WebServlet("/report")
+@WebServlet("/reports")
 public class ReportController extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String reportType = request.getParameter("type");
+        
+        try {
+            if ("tripSchedule".equals(reportType)) {
+                tripScheduleReportForm(request, response);
+            } else if ("routeUsage".equals(reportType)) {
+                routeUsageReportForm(request, response);
+            } else if ("maintenanceSummary".equals(reportType)) {
+                maintenanceSummaryReportForm(request, response);
+            } else if ("busUtilization".equals(reportType)) {
+                busUtilizationReportForm(request, response);
+            } else {
+                reportsDashboard(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error loading report form: " + e.getMessage());
+            request.getRequestDispatcher("/admin/reports_dashboard.jsp").forward(request, response);
+        }
+    }
     
     @Override
-    protected void doGet(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
-        String type = request.getParameter("type");
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String reportType = request.getParameter("type");
         
-        if ("revenue".equals(type)) 
-            revenueForm(request, response);
-        else if ("route".equals(type)) 
-            routePerformanceForm(request, response);
-        else if ("payment".equals(type)) 
-            dailyPaymentForm(request, response);
-        else if ("utilization".equals(type)) 
-            busUtilizationForm(request, response);
-    }
-    
-    @Override
-    protected void doPost(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
-        String type = request.getParameter("type");
-        
-        if ("revenue".equals(type)) 
-            generateRevenueReport(request, response);
-        else if ("route".equals(type)) 
-            generateRoutePerformanceReport(request, response);
-        else if ("payment".equals(type)) 
-            generateDailyPaymentReport(request, response);
-        else if ("utilization".equals(type)) 
-            generateBusUtilizationReport(request, response);
-    }
-    
-    private void revenueForm(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
-        request.getRequestDispatcher("/admin/dashboard.jsp")
-            .forward(request, response);
-    }
-    
-    private void generateRevenueReport(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
         try {
-            int year = Integer.parseInt(request.getParameter("year"));
-            int month = Integer.parseInt(request.getParameter("month"));
-            
-            RevenueReport report = new RevenueReport();
-            report.reportYear = year;
-            report.reportMonth = month;
-            report.generateReport();
-            
-            request.setAttribute("report", report);
-            request.setAttribute("reportType", "revenue");
-            request.getRequestDispatcher("/admin/dashboard.jsp")
-                .forward(request, response);
+            if ("tripSchedule".equals(reportType)) {
+                generateTripScheduleReport(request, response);
+            } else if ("routeUsage".equals(reportType)) {
+                generateRouteUsageReport(request, response);
+            } else if ("maintenanceSummary".equals(reportType)) {
+                generateMaintenanceSummaryReport(request, response);
+            } else if ("busUtilization".equals(reportType)) {
+                generateBusUtilizationReport(request, response);
+            } else {
+                reportsDashboard(request, response);
+            }
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Error generating report: " + 
-                e.getMessage());
-            request.getRequestDispatcher("/admin/dashboard.jsp")
-                .forward(request, response);
+            request.setAttribute("error", "Error generating report: " + e.getMessage());
+            request.getRequestDispatcher("/admin/reports_dashboard.jsp").forward(request, response);
         }
     }
     
-    private void routePerformanceForm(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
-        request.getRequestDispatcher("/admin/dashboard.jsp")
-            .forward(request, response);
-    }
-    
-    private void generateRoutePerformanceReport(HttpServletRequest request,
-        HttpServletResponse response) throws ServletException, IOException {
+    /**
+     * Main reports dashboard
+     */
+    private void reportsDashboard(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
         try {
-            int year = Integer.parseInt(request.getParameter("year"));
-            int month = Integer.parseInt(request.getParameter("month"));
+            Calendar cal = Calendar.getInstance();
+            int currentMonth = cal.get(Calendar.MONTH) + 1;
+            int currentYear = cal.get(Calendar.YEAR);
             
-            RoutePerformanceReport report = new RoutePerformanceReport();
-            report.reportYear = year;
-            report.reportMonth = month;
-            report.generateReport();
+            request.setAttribute("currentMonth", currentMonth);
+            request.setAttribute("currentYear", currentYear);
             
-            request.setAttribute("report", report);
-            request.setAttribute("reportType", "route");
-            request.getRequestDispatcher("/admin/dashboard.jsp")
-                .forward(request, response);
+            request.getRequestDispatcher("/admin/reports_dashboard.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Error generating report: " + 
-                e.getMessage());
-            request.getRequestDispatcher("/admin/dashboard.jsp")
-                .forward(request, response);
+            request.setAttribute("error", "Error loading dashboard: " + e.getMessage());
+            request.getRequestDispatcher("/admin/reports_dashboard.jsp").forward(request, response);
+        }
+    }
+       
+    private void tripScheduleReportForm(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String today = sdf.format(new Date());
+            
+            request.setAttribute("date", today);
+            request.getRequestDispatcher("/admin/trip_schedule_report_form.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error loading form: " + e.getMessage());
+            request.getRequestDispatcher("/admin/reports_dashboard.jsp").forward(request, response);
         }
     }
     
-    private void dailyPaymentForm(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
-        request.getRequestDispatcher("/admin/dashboard.jsp")
-            .forward(request, response);
-    }
-    
-    private void generateDailyPaymentReport(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
+    private void generateTripScheduleReport(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
         try {
-            int year = Integer.parseInt(request.getParameter("year"));
-            int month = Integer.parseInt(request.getParameter("month"));
+            String terminalIDParam = request.getParameter("terminalID");
+            String date = request.getParameter("date");
             
-            DailyPaymentReport report = new DailyPaymentReport();
-            report.reportYear = year;
-            report.reportMonth = month;
-            report.generateReport();
+            // Validate inputs
+            if (terminalIDParam == null || terminalIDParam.isEmpty() || 
+                date == null || !date.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                throw new IllegalArgumentException("Invalid terminal ID or date format");
+            }
             
-            request.setAttribute("report", report);
-            request.setAttribute("reportType", "payment");
-            request.getRequestDispatcher("/admin/dashboard.jsp")
-                .forward(request, response);
+            int terminalID = Integer.parseInt(terminalIDParam);
+            
+            // Generate report
+            Map<String, Object> reportData = ReportService.getDailyScheduleByTerminal(terminalID, date);
+            
+            request.setAttribute("reportData", reportData);
+            request.setAttribute("date", date);
+            request.getRequestDispatcher("/admin/trip_schedule_report.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Error generating report: " + 
-                e.getMessage());
-            request.getRequestDispatcher("/admin/dashboard.jsp")
-                .forward(request, response);
+            request.setAttribute("error", "Error generating report: " + e.getMessage());
+            request.getRequestDispatcher("/admin/trip_schedule_report_form.jsp").forward(request, response);
+        }
+    }
+     
+    private void routeUsageReportForm(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            Calendar cal = Calendar.getInstance();
+            int currentMonth = cal.get(Calendar.MONTH) + 1;
+            int currentYear = cal.get(Calendar.YEAR);
+            
+            request.setAttribute("month", currentMonth);
+            request.setAttribute("year", currentYear);
+            request.getRequestDispatcher("/admin/route_usage_report_form.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error loading form: " + e.getMessage());
+            request.getRequestDispatcher("/admin/reports_dashboard.jsp").forward(request, response);
         }
     }
     
-    private void busUtilizationForm(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
-        request.getRequestDispatcher("/admin/dashboard.jsp")
-            .forward(request, response);
-    }
-    
-    private void generateBusUtilizationReport(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
+    private void generateRouteUsageReport(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
         try {
-            int year = Integer.parseInt(request.getParameter("year"));
-            int month = Integer.parseInt(request.getParameter("month"));
+            String yearStr = request.getParameter("year");
+            String monthStr = request.getParameter("month");
             
-            BusUtilizationReport report = new BusUtilizationReport();
-            report.reportYear = year;
-            report.reportMonth = month;
-            report.generateReport();
+            // Validate and parse parameters
+            int year, month;
+            try {
+                year = Integer.parseInt(yearStr);
+                month = Integer.parseInt(monthStr);
+                
+                if (year < 1900 || year > 2100 || month < 1 || month > 12) {
+                    throw new IllegalArgumentException("Invalid year or month");
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Year and month must be numeric");
+            }
             
-            request.setAttribute("report", report);
-            request.setAttribute("reportType", "utilization");
-            request.getRequestDispatcher("/admin/dashboard.jsp")
-                .forward(request, response);
+            // Generate report
+            Map<String, Object> reportData = ReportService.getRouteUsageAnalysis(year, month);
+            
+            request.setAttribute("reportData", reportData);
+            request.setAttribute("year", year);
+            request.setAttribute("month", month);
+            request.getRequestDispatcher("/admin/route_usage_report.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Error generating report: " + 
-                e.getMessage());
-            request.getRequestDispatcher("/admin/dashboard.jsp")
-                .forward(request, response);
+            request.setAttribute("error", "Error generating report: " + e.getMessage());
+            request.getRequestDispatcher("/admin/route_usage_report_form.jsp").forward(request, response);
+        }
+    }
+     
+    private void maintenanceSummaryReportForm(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            Calendar cal = Calendar.getInstance();
+            int currentMonth = cal.get(Calendar.MONTH) + 1;
+            int currentYear = cal.get(Calendar.YEAR);
+            
+            request.setAttribute("month", currentMonth);
+            request.setAttribute("year", currentYear);
+            request.getRequestDispatcher("/admin/maintenance_summary_report_form.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error loading form: " + e.getMessage());
+            request.getRequestDispatcher("/admin/reports_dashboard.jsp").forward(request, response);
+        }
+    }
+    
+    private void generateMaintenanceSummaryReport(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            String yearStr = request.getParameter("year");
+            String monthStr = request.getParameter("month");
+            
+            // Validate and parse parameters
+            int year, month;
+            try {
+                year = Integer.parseInt(yearStr);
+                month = Integer.parseInt(monthStr);
+                
+                if (year < 1900 || year > 2100 || month < 1 || month > 12) {
+                    throw new IllegalArgumentException("Invalid year or month");
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Year and month must be numeric");
+            }
+            
+            // Generate report
+            Map<String, Object> reportData = ReportService.getMaintenanceCostReport(year, month);
+            
+            request.setAttribute("reportData", reportData);
+            request.setAttribute("year", year);
+            request.setAttribute("month", month);
+            request.getRequestDispatcher("/admin/maintenance_summary_report.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error generating report: " + e.getMessage());
+            request.getRequestDispatcher("/admin/maintenance_summary_report_form.jsp").forward(request, response);
+        }
+    }
+     
+    private void busUtilizationReportForm(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            Calendar cal = Calendar.getInstance();
+            int currentMonth = cal.get(Calendar.MONTH) + 1;
+            int currentYear = cal.get(Calendar.YEAR);
+            
+            request.setAttribute("month", currentMonth);
+            request.setAttribute("year", currentYear);
+            request.getRequestDispatcher("/admin/bus_utilization_report_form.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error loading form: " + e.getMessage());
+            request.getRequestDispatcher("/admin/reports_dashboard.jsp").forward(request, response);
+        }
+    }
+    
+    private void generateBusUtilizationReport(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            String yearStr = request.getParameter("year");
+            String monthStr = request.getParameter("month");
+            
+            // Validate and parse parameters
+            int year, month;
+            try {
+                year = Integer.parseInt(yearStr);
+                month = Integer.parseInt(monthStr);
+                
+                if (year < 1900 || year > 2100 || month < 1 || month > 12) {
+                    throw new IllegalArgumentException("Invalid year or month");
+                }
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Year and month must be numeric");
+            }
+            
+            // Generate report
+            Map<String, Object> reportData = ReportService.getBusUtilizationReport(year, month);
+            
+            request.setAttribute("reportData", reportData);
+            request.setAttribute("year", year);
+            request.setAttribute("month", month);
+            request.getRequestDispatcher("/admin/bus_utilization_report.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error generating report: " + e.getMessage());
+            request.getRequestDispatcher("/admin/bus_utilization_report_form.jsp").forward(request, response);
         }
     }
 }

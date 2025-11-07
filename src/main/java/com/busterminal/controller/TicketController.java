@@ -3,10 +3,7 @@ package com.busterminal.controller;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.WebServlet;
-import com.busterminal.model.Ticket;
-import com.busterminal.model.Schedule;
-import com.busterminal.service.TicketPurchaseService;
-import com.busterminal.service.TicketCancellation;
+import com.busterminal.model.*;
 import com.busterminal.utils.DBConnection;
 import java.io.IOException;
 import java.sql.*;
@@ -20,13 +17,16 @@ public class TicketController extends HttpServlet {
         HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
         
-        if ("purchase".equals(action)) {
-            purchaseForm(request, response);
-        } else if ("cancel".equals(action)) {
-            cancelForm(request, response);
-        } else {
-            purchaseForm(request, response);
-        }
+        if ("list".equals(action)) 
+            listTickets(request, response);
+        else if ("new".equals(action))
+            showNewTicketForm(request, response);
+        else if ("view".equals(action))
+            viewTicketDetails(request, response);
+        else if ("bySchedule".equals(action))
+            listTicketsBySchedule(request, response);
+        else 
+            listTickets(request, response);
     }
     
     @Override
@@ -34,107 +34,534 @@ public class TicketController extends HttpServlet {
         HttpServletResponse response) throws ServletException, IOException {
         String action = request.getParameter("action");
         
-        if ("buy".equals(action)) {
-            buyTicket(request, response);
-        } else if ("cancelTicket".equals(action)) {
-            cancelTicket(request, response);
+        if ("create".equals(action)) 
+            createTicket(request, response);
+        else if ("delete".equals(action))
+            deleteTicket(request, response);
+    }
+    
+    private void listTickets(HttpServletRequest request, 
+        HttpServletResponse response) throws ServletException, IOException {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "SELECT t.*, s.departure_time, s.status as schedule_status, " +
+                "b.bus_number, r.route_name " +
+                "FROM Ticket t " +
+                "JOIN Schedule s ON t.schedule_id = s.schedule_id " +
+                "JOIN Bus b ON s.bus_id = b.bus_id " +
+                "JOIN Route r ON s.route_id = r.route_id " +
+                "ORDER BY s.departure_time DESC");
+            
+            ResultSet rs = pStmt.executeQuery();
+            
+            List<Map<String, Object>> tickets = new ArrayList<>();
+            while(rs.next()) {
+                Map<String, Object> ticket = new HashMap<>();
+                ticket.put("ticket_id", rs.getInt("ticket_id"));
+                ticket.put("ticket_number", rs.getString("ticket_number"));
+                ticket.put("schedule_id", rs.getInt("schedule_id"));
+                ticket.put("discounted", rs.getBoolean("discounted"));
+                ticket.put("departure_time", rs.getTimestamp("departure_time"));
+                ticket.put("schedule_status", rs.getString("schedule_status"));
+                ticket.put("bus_number", rs.getString("bus_number"));
+                ticket.put("route_name", rs.getString("route_name"));
+                
+                // Get the fare amount
+                double fare = calculateFare(rs.getInt("schedule_id"), rs.getBoolean("discounted"));
+                ticket.put("fare", fare);
+                
+                tickets.add(ticket);
+            }
+            
+            rs.close();
+            pStmt.close();
+            conn.close();
+            
+            request.setAttribute("tickets", tickets);
+            request.getRequestDispatcher("/admin/tickets.jsp")
+                .forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error retrieving tickets: " + e.getMessage());
+            request.getRequestDispatcher("/admin/tickets.jsp")
+                .forward(request, response);
         }
     }
     
-    private void purchaseForm(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
-        request.getRequestDispatcher("/user/book_ticket.jsp")
-            .forward(request, response);
-    }
-    
-    private void buyTicket(HttpServletRequest request, 
+    private void listTicketsBySchedule(HttpServletRequest request, 
         HttpServletResponse response) throws ServletException, IOException {
         try {
-            TicketPurchaseService service = new TicketPurchaseService();
+            int scheduleID = Integer.parseInt(request.getParameter("scheduleID"));
             
-            int routeID = Integer.parseInt(request.getParameter("routeID"));
-            int scheduleID = Integer.parseInt(request
-                .getParameter("scheduleID"));
-            String ticketType = request.getParameter("ticketType");
-            
-            service.selectedRoute.routeID = routeID;
-            service.selectedRoute.getRecord();
-            
-            // Get busID from schedule
             Schedule schedule = new Schedule();
             schedule.scheduleID = scheduleID;
             schedule.getRecord();
             
-            // Set up the service's ticket with ALL required fields
-            service.newTicket.routeID = routeID;
-            service.newTicket.scheduleID = scheduleID;
-            service.newTicket.busID = schedule.busID;  // FIX: Get from schedule
-            service.newTicket.type = ticketType;
-            service.newTicket.departureDate = request.getParameter("departureDate"); // FIX: Get from form
-            service.newTicket.staffID = 1; // FIX: Default staff or get from session
-            service.newTicket.discount = ticketType.equals("Discounted") ? 20.0 : 0.0; // FIX: Set discount
-            service.newTicket.finalAmount = service.calculatePrice(
-                service.selectedRoute.baseFare, 
-                ticketType, 
-                service.newTicket.discount
-            );
+            Route route = new Route();
+            route.routeID = schedule.routeID;
+            route.getRecord();
             
-            if(service.confirmPurchase() == 1) {
-                request.setAttribute(
-                    "success", "Ticket purchased successfully!");
-                request.setAttribute("ticket", service.newTicket);
-                request.getRequestDispatcher("/user/ticket_details.jsp")
-                    .forward(request, response);
-            } else {
-                request.setAttribute("error", "Failed to purchase ticket");
-                request.getRequestDispatcher("/user/book_ticket.jsp")
-                    .forward(request, response);
+            Bus bus = new Bus();
+            bus.busID = schedule.busID;
+            bus.getRecord();
+            
+            List<Ticket> tickets = Ticket.getTicketsByScheduleID(scheduleID);
+            
+            int totalPassengers = tickets.size();
+            int discountedPassengers = 0;
+            double totalRevenue = 0.0;
+            
+            for (Ticket ticket : tickets) {
+                if (ticket.discounted) {
+                    discountedPassengers++;
+                }
+                double fare = ticket.calculateFare(schedule.routeID);
+                totalRevenue += fare;
             }
+            
+            request.setAttribute("schedule", schedule);
+            request.setAttribute("route", route);
+            request.setAttribute("bus", bus);
+            request.setAttribute("tickets", tickets);
+            request.setAttribute("totalPassengers", totalPassengers);
+            request.setAttribute("discountedPassengers", discountedPassengers);
+            request.setAttribute("regularPassengers", totalPassengers - discountedPassengers);
+            request.setAttribute("totalRevenue", totalRevenue);
+            request.setAttribute("baseFare", route.baseFare);
+            
+            request.getRequestDispatcher("/admin/schedule_tickets.jsp")
+                .forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Error: " + e.getMessage());
-            request.getRequestDispatcher("/user/book_ticket.jsp")
-                .forward(request, response);
+            request.setAttribute("error", "Error retrieving tickets for schedule: " + e.getMessage());
+            response.sendRedirect("schedule?action=list");
         }
     }
     
-    private void cancelForm(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
-        request.getRequestDispatcher("/user/cancel_ticket.jsp")
-            .forward(request, response);
-    }
-    
-    private void cancelTicket(HttpServletRequest request, 
+    private void showNewTicketForm(HttpServletRequest request, 
         HttpServletResponse response) throws ServletException, IOException {
         try {
-            TicketCancellation service = new TicketCancellation ();
+            List<Map<String, Object>> availableSchedules = getAvailableSchedules();
             
-            int ticketID = Integer.parseInt(request.getParameter("ticketID"));
-            service.loadTicket(ticketID);
+            request.setAttribute("schedules", availableSchedules);
+            request.getRequestDispatcher("/admin/create_ticket.jsp")
+                .forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error loading ticket form: " + e.getMessage());
+            response.sendRedirect("ticket?action=list");
+        }
+    }
+    
+    private void viewTicketDetails(HttpServletRequest request, 
+        HttpServletResponse response) throws ServletException, IOException {
+        try {
+            int ticketID = Integer.parseInt(request.getParameter("id"));
             
-            if(service.checkEligibility()) {
-                service.calculateRefund();
+            Ticket ticket = new Ticket();
+            ticket.ticketID = ticketID;
+            
+            if(ticket.getRecord() == 1) {
+                Schedule schedule = new Schedule();
+                schedule.scheduleID = ticket.scheduleID;
+                schedule.getRecord();
                 
-                if(service.processCancellation() == 1) {
-                    request.setAttribute("success", service
-                        .generateConfirmation());
-                    request.getRequestDispatcher("/user/ticket_details.jsp")
-                        .forward(request, response);
-                } else {
-                    request.setAttribute("error", "Failed to cancel ticket");
-                    request.getRequestDispatcher("/user/cancel_ticket.jsp")
-                        .forward(request, response);
-                }
-            } else {
-                request.setAttribute("error", service.cancellationReason);
-                request.getRequestDispatcher("/user/cancel_ticket.jsp")
+                Route route = new Route();
+                route.routeID = schedule.routeID;
+                route.getRecord();
+                
+                Bus bus = new Bus();
+                bus.busID = schedule.busID;
+                bus.getRecord();
+                
+                Terminal origin = new Terminal();
+                origin.terminalID = route.originID;
+                origin.getRecord();
+                
+                Terminal destination = new Terminal();
+                destination.terminalID = route.destinationID;
+                destination.getRecord();
+                
+                double fare = calculateFare(ticket.scheduleID, ticket.discounted);
+                
+                request.setAttribute("ticket", ticket);
+                request.setAttribute("schedule", schedule);
+                request.setAttribute("route", route);
+                request.setAttribute("bus", bus);
+                request.setAttribute("origin", origin);
+                request.setAttribute("destination", destination);
+                request.setAttribute("fare", fare);
+                
+                request.getRequestDispatcher("/admin/view_ticket.jsp")
                     .forward(request, response);
+            } else {
+                request.setAttribute("error", "Ticket not found");
+                response.sendRedirect("ticket?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Error: " + e.getMessage());
-            request.getRequestDispatcher("/user/cancel_ticket.jsp")
-                .forward(request, response);
+            request.setAttribute("error", "Error retrieving ticket details: " + e.getMessage());
+            response.sendRedirect("ticket?action=list");
         }
+    }
+    
+    /**
+     * Create ticket with transaction locking to prevent overbooking
+     * This fixes the critical race condition issue
+     */
+    private void createTicket(HttpServletRequest request, 
+        HttpServletResponse response) throws ServletException, IOException {
+        Connection conn = null;
+        
+        try {
+            // Validate input
+            Map<String, String> validationErrors = validateTicketInput(request);
+            
+            if (!validationErrors.isEmpty()) {
+                List<Map<String, Object>> availableSchedules = getAvailableSchedules();
+                request.setAttribute("validationErrors", validationErrors);
+                request.setAttribute("schedules", availableSchedules);
+                request.setAttribute("scheduleID", request.getParameter("scheduleID"));
+                request.setAttribute("discounted", request.getParameter("discounted"));
+                
+                request.getRequestDispatcher("/admin/create_ticket.jsp")
+                    .forward(request, response);
+                return;
+            }
+            
+            int scheduleID = Integer.parseInt(request.getParameter("scheduleID"));
+            boolean discounted = "on".equals(request.getParameter("discounted"));
+            
+            // START TRANSACTION WITH LOCKING
+            conn = DBConnection.getConnection();
+            conn.setAutoCommit(false);
+            
+            // 1. Lock the schedule row to prevent concurrent bookings
+            PreparedStatement lockStmt = conn.prepareStatement(
+                "SELECT s.schedule_id, s.bus_id, s.status, b.capacity " +
+                "FROM Schedule s " +
+                "JOIN Bus b ON s.bus_id = b.bus_id " +
+                "WHERE s.schedule_id = ? FOR UPDATE");
+            lockStmt.setInt(1, scheduleID);
+            ResultSet lockRs = lockStmt.executeQuery();
+            
+            if (!lockRs.next()) {
+                conn.rollback();
+                request.setAttribute("error", "Schedule not found");
+                showNewTicketForm(request, response);
+                return;
+            }
+            
+            String scheduleStatus = lockRs.getString("status");
+            int capacity = lockRs.getInt("capacity");
+            lockRs.close();
+            lockStmt.close();
+            
+            // 2. Verify schedule is still bookable
+            if (!"Scheduled".equals(scheduleStatus)) {
+                conn.rollback();
+                request.setAttribute("error", "Schedule is no longer available (Status: " + scheduleStatus + ")");
+                showNewTicketForm(request, response);
+                return;
+            }
+            
+            // 3. Re-check availability within transaction (CRITICAL!)
+            PreparedStatement countStmt = conn.prepareStatement(
+                "SELECT COUNT(*) as sold FROM Ticket WHERE schedule_id = ?");
+            countStmt.setInt(1, scheduleID);
+            ResultSet countRs = countStmt.executeQuery();
+            
+            int soldTickets = 0;
+            if (countRs.next()) {
+                soldTickets = countRs.getInt("sold");
+            }
+            countRs.close();
+            countStmt.close();
+            
+            int availableSeats = capacity - soldTickets;
+            
+            if (availableSeats <= 0) {
+                conn.rollback();
+                request.setAttribute("error", "Sorry! This schedule just sold out. Please choose another departure.");
+                showNewTicketForm(request, response);
+                return;
+            }
+            
+            // 4. Create the ticket
+            Ticket ticket = new Ticket();
+            ticket.scheduleID = scheduleID;
+            ticket.discounted = discounted;
+            ticket.ticketNumber = generateTicketNumber();
+            
+            PreparedStatement insertStmt = conn.prepareStatement(
+                "INSERT INTO Ticket (ticket_number, schedule_id, discounted) VALUES (?,?,?)",
+                Statement.RETURN_GENERATED_KEYS);
+            insertStmt.setString(1, ticket.ticketNumber);
+            insertStmt.setInt(2, ticket.scheduleID);
+            insertStmt.setBoolean(3, ticket.discounted);
+            
+            int affectedRows = insertStmt.executeUpdate();
+            
+            if (affectedRows == 0) {
+                conn.rollback();
+                request.setAttribute("error", "Failed to create ticket");
+                showNewTicketForm(request, response);
+                return;
+            }
+            
+            ResultSet generatedKeys = insertStmt.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                ticket.ticketID = generatedKeys.getInt(1);
+            }
+            generatedKeys.close();
+            insertStmt.close();
+            
+            // 5. Commit the transaction
+            conn.commit();
+            
+            // Success!
+            request.setAttribute("success", "Ticket purchased successfully! Ticket Number: " + ticket.ticketNumber);
+            response.sendRedirect("ticket?action=view&id=" + ticket.ticketID);
+            
+        } catch (NumberFormatException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException se) { se.printStackTrace(); }
+            }
+            e.printStackTrace();
+            request.setAttribute("error", "Invalid input format");
+            showNewTicketForm(request, response);
+        } catch (SQLException e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException se) { se.printStackTrace(); }
+            }
+            e.printStackTrace();
+            request.setAttribute("error", "Database error: " + e.getMessage());
+            showNewTicketForm(request, response);
+        } catch (Exception e) {
+            if (conn != null) {
+                try { conn.rollback(); } catch (SQLException se) { se.printStackTrace(); }
+            }
+            e.printStackTrace();
+            request.setAttribute("error", "Error creating ticket: " + e.getMessage());
+            showNewTicketForm(request, response);
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    
+    private void deleteTicket(HttpServletRequest request, 
+        HttpServletResponse response) throws ServletException, IOException {
+        try {
+            int ticketID = Integer.parseInt(request.getParameter("id"));
+            
+            Ticket ticket = new Ticket();
+            ticket.ticketID = ticketID;
+            
+            if (ticket.getRecord() == 1) {
+                int scheduleID = ticket.scheduleID;
+                
+                Schedule schedule = new Schedule();
+                schedule.scheduleID = scheduleID;
+                schedule.getRecord();
+                
+                if ("Departed".equals(schedule.status) || "Completed".equals(schedule.status)) {
+                    request.setAttribute("error", "Cannot delete ticket for a departed or completed trip");
+                    response.sendRedirect("ticket?action=list");
+                    return;
+                }
+                
+                if(ticket.delRecord() == 1) {
+                    int remainingTickets = getTicketCountForSchedule(scheduleID);
+                    
+                    if (remainingTickets == 0) {
+                        Bus bus = new Bus();
+                        bus.busID = schedule.busID;
+                        bus.getRecord();
+                        
+                        if ("Scheduled".equals(bus.status)) {
+                            bus.status = "Available";
+                            bus.modRecord();
+                        }
+                    }
+                    
+                    request.setAttribute("success", "Ticket deleted successfully");
+                } else {
+                    request.setAttribute("error", "Failed to delete ticket");
+                }
+            } else {
+                request.setAttribute("error", "Ticket not found");
+            }
+            
+            response.sendRedirect("ticket?action=list");
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error deleting ticket: " + e.getMessage());
+            response.sendRedirect("ticket?action=list");
+        }
+    }
+     
+    private Map<String, String> validateTicketInput(HttpServletRequest request) {
+        Map<String, String> errors = new HashMap<>();
+        
+        String scheduleIDStr = request.getParameter("scheduleID");
+        if (scheduleIDStr == null || scheduleIDStr.trim().isEmpty()) {
+            errors.put("scheduleID", "Schedule is required");
+            return errors;
+        }
+        
+        try {
+            int scheduleID = Integer.parseInt(scheduleIDStr);
+            if (scheduleID <= 0) {
+                errors.put("scheduleID", "Invalid schedule");
+                return errors;
+            }
+            
+            // Validate schedule exists and is bookable
+            Schedule schedule = new Schedule();
+            schedule.scheduleID = scheduleID;
+            if (schedule.getRecord() != 1) {
+                errors.put("scheduleID", "Schedule not found");
+                return errors;
+            }
+            
+            // Check schedule status
+            if ("Departed".equals(schedule.status) || 
+                "Cancelled".equals(schedule.status) || 
+                "Completed".equals(schedule.status)) {
+                errors.put("scheduleID", "Cannot create ticket for a departed, completed, or cancelled schedule");
+                return errors;
+            }
+            
+            // Check if departure is in the past
+            Timestamp now = new Timestamp(System.currentTimeMillis());
+            if (schedule.departureTime.before(now)) {
+                errors.put("scheduleID", "Cannot book tickets for past departures");
+                return errors;
+            }
+            
+        } catch (NumberFormatException e) {
+            errors.put("scheduleID", "Invalid schedule ID format");
+        }
+        
+        return errors;
+    }
+    
+    private List<Map<String, Object>> getAvailableSchedules() {
+        List<Map<String, Object>> schedules = new ArrayList<>();
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "SELECT s.*, r.route_name, b.bus_number, b.capacity, " +
+                "t1.terminal_name as origin, t2.terminal_name as destination " +
+                "FROM Schedule s " +
+                "JOIN Route r ON s.route_id = r.route_id " +
+                "JOIN Bus b ON s.bus_id = b.bus_id " +
+                "JOIN Terminal t1 ON r.origin_id = t1.terminal_id " +
+                "JOIN Terminal t2 ON r.destination_id = t2.terminal_id " +
+                "WHERE s.status = 'Scheduled' " +
+                "AND s.departure_time > NOW() " +
+                "ORDER BY s.departure_time");
+            
+            ResultSet rs = pStmt.executeQuery();
+            
+            while(rs.next()) {
+                Map<String, Object> schedule = new HashMap<>();
+                int scheduleID = rs.getInt("schedule_id");
+                
+                schedule.put("schedule_id", scheduleID);
+                schedule.put("route_name", rs.getString("route_name"));
+                schedule.put("bus_number", rs.getString("bus_number"));
+                schedule.put("departure_time", rs.getTimestamp("departure_time"));
+                schedule.put("arrival_time", rs.getTimestamp("arrival_time"));
+                schedule.put("origin", rs.getString("origin"));
+                schedule.put("destination", rs.getString("destination"));
+                
+                int capacity = rs.getInt("capacity");
+                int ticketCount = getTicketCountForSchedule(scheduleID);
+                
+                schedule.put("available_seats", capacity - ticketCount);
+                schedule.put("total_capacity", capacity);
+                
+                if (capacity > ticketCount) {
+                    schedules.add(schedule);
+                }
+            }
+            
+            rs.close();
+            pStmt.close();
+            conn.close();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return schedules;
+    }
+    
+    private int getTicketCountForSchedule(int scheduleID) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "SELECT COUNT(*) as count FROM Ticket WHERE schedule_id = ?");
+            pStmt.setInt(1, scheduleID);
+            
+            ResultSet rs = pStmt.executeQuery();
+            int count = 0;
+            
+            if (rs.next()) {
+                count = rs.getInt("count");
+            }
+            
+            rs.close();
+            pStmt.close();
+            conn.close();
+            
+            return count;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return 0;
+        }
+    }
+    
+    private double calculateFare(int scheduleID, boolean isDiscounted) {
+        try {
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement pStmt = conn.prepareStatement(
+                "SELECT r.base_fare FROM Schedule s " +
+                "JOIN Route r ON s.route_id = r.route_id " +
+                "WHERE s.schedule_id = ?");
+            pStmt.setInt(1, scheduleID);
+            
+            ResultSet rs = pStmt.executeQuery();
+            double fare = 0.0;
+            
+            if (rs.next()) {
+                fare = rs.getDouble("base_fare");
+                
+                if (isDiscounted) {
+                    fare = fare * 0.8; // 20% discount
+                }
+            }
+            
+            rs.close();
+            pStmt.close();
+            conn.close();
+            
+            return fare;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return 0.0;
+        }
+    }
+    
+    private String generateTicketNumber() {
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss");
+        return "TCK-" + sdf.format(new java.util.Date()) + "-" + (int)(Math.random() * 10000);
     }
 }

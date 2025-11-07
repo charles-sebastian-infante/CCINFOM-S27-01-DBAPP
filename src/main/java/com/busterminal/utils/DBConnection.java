@@ -3,9 +3,10 @@ import java.sql.*;
 
 public class DBConnection {
     private static final String URL = 
-        "jdbc:mysql://localhost:3306/bus_terminal_management?useSSL=false&serverTimezone=UTC";
+        "jdbc:mysql://localhost:3306/bus_terminal_management?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
     private static final String USER = "root";
-    private static final String PASSWORD = "";
+    private static final String PASSWORD = "passcode";
+
     public static Connection getConnection() {
         Connection conn = null;
         try {
@@ -16,10 +17,10 @@ public class DBConnection {
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
 
         } catch (ClassNotFoundException e) {
-            System.out.println(" MySQL JDBC Driver not found!");
+            System.out.println("MySQL JDBC Driver not found!");
             e.printStackTrace();
         } catch (SQLException e) {
-            System.out.println(" SQL Connection Error: " + e.getMessage());
+            System.out.println("SQL Connection Error: " + e.getMessage());
             e.printStackTrace();
         }
 

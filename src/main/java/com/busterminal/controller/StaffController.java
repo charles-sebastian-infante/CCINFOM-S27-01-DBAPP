@@ -4,6 +4,7 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.WebServlet;
 import com.busterminal.model.Staff;
+import com.busterminal.service.StaffReassignmentService;
 import com.busterminal.utils.DBConnection;
 import java.io.IOException;
 import java.sql.*;
@@ -51,7 +52,7 @@ public class StaffController extends HttpServlet {
                 Staff s = new Staff();
                 s.staffID = rs.getInt("staff_id");
                 s.staffName = rs.getString("staff_name");
-                s.role = rs.getString("role");
+                s.roleID = rs.getInt("role_id");
                 s.assignedTerminal = rs.getInt("assigned_terminal");
                 s.assignedBus = rs.getInt("assigned_bus");
                 s.shift = rs.getString("shift");
@@ -79,11 +80,11 @@ public class StaffController extends HttpServlet {
                 request.getRequestDispatcher("/admin/manage_staff.jsp")
                     .forward(request, response);
             } else {
-                response.sendRedirect(request.getContextPath() + "/staff?action=list");
+                response.sendRedirect("staff?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/staff?action=list");
+            response.sendRedirect("staff?action=list");
         }
     }
     
@@ -92,7 +93,7 @@ public class StaffController extends HttpServlet {
         try {
             Staff staff = new Staff();
             staff.staffName = request.getParameter("staffName");
-            staff.role = request.getParameter("role");
+            staff.roleID = Integer.parseInt(request.getParameter("roleID"));
             staff.assignedTerminal = Integer.parseInt(request
                 .getParameter("assignedTerminal"));
             staff.assignedBus = Integer.parseInt(request
@@ -101,7 +102,7 @@ public class StaffController extends HttpServlet {
             staff.contact = request.getParameter("contact");
             
             if(staff.addRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/staff?action=list");
+                response.sendRedirect("staff?action=list");
             } else {
                 request.setAttribute("error", "Failed to add staff");
                 request.getRequestDispatcher("/admin/manage_staff.jsp")
@@ -121,7 +122,7 @@ public class StaffController extends HttpServlet {
             Staff staff = new Staff();
             staff.staffID = Integer.parseInt(request.getParameter("staffID"));
             staff.staffName = request.getParameter("staffName");
-            staff.role = request.getParameter("role");
+            staff.roleID = Integer.parseInt(request.getParameter("roleID"));
             staff.assignedTerminal = Integer.parseInt(request
                 .getParameter("assignedTerminal"));
             staff.assignedBus = Integer.parseInt(request
@@ -130,7 +131,7 @@ public class StaffController extends HttpServlet {
             staff.contact = request.getParameter("contact");
             
             if(staff.modRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/staff?action=list");
+                response.sendRedirect("staff?action=list");
             } else {
                 request.setAttribute("error", "Failed to update staff");
                 request.setAttribute("staff", staff);
@@ -153,14 +154,76 @@ public class StaffController extends HttpServlet {
             staff.staffID = Integer.parseInt(request.getParameter("id"));
             
             if(staff.delRecord() == 1) {
-                response.sendRedirect(request.getContextPath() + "/staff?action=list");
+                response.sendRedirect("staff?action=list");
             } else {
                 request.setAttribute("error", "Failed to delete staff");
-                response.sendRedirect(request.getContextPath() + "/staff?action=list");
+                response.sendRedirect("staff?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.sendRedirect(request.getContextPath() + "/staff?action=list");
+            response.sendRedirect("staff?action=list");
+        }
+    }
+
+    private void reassignStaffForm(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            int staffID = Integer.parseInt(request.getParameter("staffID"));
+            Staff staff = new Staff();
+            staff.staffID = staffID;
+            staff.getRecord();
+            
+            request.setAttribute("staff", staff);
+            request.getRequestDispatcher("/admin/reassign_staff_form.jsp").forward(request, response);
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("staff");
+        }
+    }
+
+    private void processReassignment(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        try {
+            int staffID = Integer.parseInt(request.getParameter("staffID"));
+            String assignmentType = request.getParameter("assignmentType"); // "bus" or "maintenance"
+            int assignmentID = Integer.parseInt(request.getParameter("assignmentID"));
+            
+            StaffReassignmentService reassignmentService = new StaffReassignmentService();
+            reassignmentService.loadStaff(staffID);
+            
+            // Check eligibility
+            if (!reassignmentService.checkReassignmentEligibility()) {
+                request.setAttribute("error", reassignmentService.reassignmentReason);
+                reassignStaffForm(request, response);
+                return;
+            }
+            
+            // Validate shift
+            if (!reassignmentService.validateShiftCompatibility(assignmentType, assignmentID)) {
+                request.setAttribute("error", "Shift incompatible");
+                reassignStaffForm(request, response);
+                return;
+            }
+            
+            // Perform reassignment
+            int result;
+            if ("bus".equals(assignmentType)) {
+                result = reassignmentService.reassignStaffToBus(assignmentID);
+            } else {
+                result = reassignmentService.reassignStaffToMaintenance(assignmentID);
+            }
+            
+            if (result == 1) {
+                request.setAttribute("success", reassignmentService.generateConfirmation());
+            } else {
+                request.setAttribute("error", "Reassignment failed");
+            }
+            
+            response.sendRedirect("staff");
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error: " + e.getMessage());
+            response.sendRedirect("staff");
         }
     }
 }
