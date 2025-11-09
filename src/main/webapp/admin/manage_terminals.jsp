@@ -13,14 +13,7 @@
         .btn-delete { background:#e74c3c; color:#fff; border:none; }
         .btn-edit { background:#3498db; color:#fff; border:none; }
     </style>
-        <script>
-        function confirmDelete(form) {
-            if (confirm('Are you sure you want to remove this terminal?')) {
-                form.submit();
-            }
-            return false;
-        }
-
+    <script>
         function validateTerminalForm(form) {
             var name = (form.terminalName && form.terminalName.value) ? form.terminalName.value.trim() : "";
             var phone = (form.phone && form.phone.value) ? form.phone.value.trim() : "";
@@ -43,13 +36,12 @@
         <p style="color:red;"><%= request.getAttribute("error") %></p>
     <% } %>
 
-    <!-- Edit form (shown when a single 'terminal' attribute is present) -->
     <% if(request.getAttribute("terminal") != null) {
         com.busterminal.model.Terminal t = (com.busterminal.model.Terminal) request.getAttribute("terminal");
     %>
         <div class="form-block">
             <h2>Edit Terminal</h2>
-            <form method="POST" action="<%= request.getContextPath() %>/terminal">
+            <form method="POST" action="<%= request.getContextPath() %>/terminal" onsubmit="return validateTerminalForm(this);">
                 <input type="hidden" name="action" value="update">
                 <input type="hidden" name="terminalID" value="<%= t.terminalID %>">
 
@@ -57,12 +49,8 @@
                     <input type="text" name="terminalName" value="<%= t.terminalName != null ? t.terminalName : "" %>" required>
                 </label><br><br>
 
-                <label>Location:<br>
-                    <input type="text" name="location" value="<%= t.location != null ? t.location : "" %>" required>
-                </label><br><br>
-
-                <label>City:<br>
-                    <input type="text" name="city" value="<%= t.city != null ? t.city : "" %>" required>
+                <label>Address:<br>
+                    <input type="text" name="address" value="<%= t.address != null ? t.address : "" %>" required>
                 </label><br><br>
 
                 <label>Phone:<br>
@@ -74,22 +62,17 @@
             </form>
         </div>
     <% } else { %>
-    <!-- Create form (default) -->
         <div class="form-block">
             <h2>Register New Terminal</h2>
-            <form method="POST" action="<%= request.getContextPath() %>/terminal">
+            <form method="POST" action="<%= request.getContextPath() %>/terminal" onsubmit="return validateTerminalForm(this);">
                 <input type="hidden" name="action" value="create">
 
                 <label>Terminal Name:<br>
                     <input type="text" name="terminalName" required>
                 </label><br><br>
 
-                <label>Location:<br>
-                    <input type="text" name="location" required>
-                </label><br><br>
-
-                <label>City:<br>
-                    <input type="text" name="city" required>
+                <label>Address:<br>
+                    <input type="text" name="address" required>
                 </label><br><br>
 
                 <label>Phone:<br>
@@ -102,7 +85,6 @@
         </div>
     <% } %>
 
-    <!-- Terminals list -->
     <% if(request.getAttribute("terminals") != null) {
         java.util.List<com.busterminal.model.Terminal> list = (java.util.List<com.busterminal.model.Terminal>) request.getAttribute("terminals");
         if(list.size() == 0) {
@@ -115,8 +97,7 @@
                 <tr>
                     <th>ID</th>
                     <th>Terminal Name</th>
-                    <th>Location</th>
-                    <th>City</th>
+                    <th>Address</th>
                     <th>Phone</th>
                     <th>Actions</th>
                 </tr>
@@ -126,8 +107,7 @@
                 <tr>
                     <td><%= tt.terminalID %></td>
                     <td><%= tt.terminalName %></td>
-                    <td><%= tt.location %></td>
-                    <td><%= tt.city %></td>
+                    <td><%= tt.address %></td>
                     <td><%= tt.phone %></td>
                     <td>
                         <a class="btn btn-edit" href="<%= request.getContextPath() %>/terminal?action=edit&id=<%= tt.terminalID %>">Edit</a>
