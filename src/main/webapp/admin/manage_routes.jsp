@@ -1,10 +1,14 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="java.util.HashMap" %>
+<%@ page import="com.busterminal.model.Terminal" %>
+<%@ page import="com.busterminal.model.Route" %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>Manage Routes</title>
-    <link rel="stylesheet" href="../assets/css/admin.css">
     <style>
         table { border-collapse: collapse; width: 100%; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
@@ -31,12 +35,13 @@
     <% } %>
 
     <% if(request.getAttribute("error") != null) { %>
-        <p style="color:red;"><%= request.getAttribute("error") %></p>
+        <p style="color:red;"><%= request.getAttribute("error: Invalid value inputted") %></p>
     <% } %>
 
     <!-- Edit form (shown when a single 'route' attribute is present) -->
     <% if(request.getAttribute("route") != null) {
-        com.busterminal.model.Route r = (com.busterminal.model.Route) request.getAttribute("route");
+        Route r = (Route) request.getAttribute("     route");
+        List<Terminal> terminals = (List<Terminal>) request.getAttribute("terminals");
     %>
         <div class="form-block">
             <h2>Edit Route</h2>
@@ -48,12 +53,32 @@
                     <input type="text" name="routeName" value="<%= r.routeName != null ? r.routeName : "" %>" required>
                 </label><br><br>
 
-                <label>Origin ID:<br>
-                    <input type="number" name="originID" value="<%= r.originID %>" required>
+                <label>Origin Terminal:<br>
+                    <select name="originID" required>
+                        <option value="">-- Select Origin --</option>
+                        <% if (terminals != null) {
+                            for (Terminal terminal : terminals) { %>
+                                <option value="<%= terminal.terminalID %>" 
+                                    <%= terminal.terminalID == r.originID ? "selected" : "" %>>
+                                    <%= terminal.terminalName %>
+                                </option>
+                        <%  }
+                        } %>
+                    </select>
                 </label><br><br>
 
-                <label>Destination ID:<br>
-                    <input type="number" name="destinationID" value="<%= r.destinationID %>" required>
+                <label>Destination Terminal:<br>
+                    <select name="destinationID" required>
+                        <option value="">-- Select Destination --</option>
+                        <% if (terminals != null) {
+                            for (Terminal terminal : terminals) { %>
+                                <option value="<%= terminal.terminalID %>" 
+                                    <%= terminal.terminalID == r.destinationID ? "selected" : "" %>>
+                                    <%= terminal.terminalName %>
+                                </option>
+                        <%  }
+                        } %>
+                    </select>
                 </label><br><br>
 
                 <label>Distance:<br>
@@ -76,6 +101,13 @@
     <!-- Create form (default) -->
         <div class="form-block">
             <h2>Register New Route</h2>
+            <% 
+                List<Terminal> terminalsForCreate = (List<Terminal>) request.getAttribute("terminals"); 
+                // If terminals not loaded from controller, fetch them
+                if (terminalsForCreate == null) {
+                    terminalsForCreate = Terminal.getAllTerminals();
+                }
+            %>
             <form method="POST" action="<%= request.getContextPath() %>/route">
                 <input type="hidden" name="action" value="create">
 
@@ -83,12 +115,30 @@
                     <input type="text" name="routeName" required>
                 </label><br><br>
 
-                <label>Origin ID:<br>
-                    <input type="number" name="originID" required>
+                <label>Origin Terminal:<br>
+                    <select name="originID" required>
+                        <option value="">-- Select Origin --</option>
+                        <% if (terminalsForCreate != null) {
+                            for (Terminal terminal : terminalsForCreate) { %>
+                                <option value="<%= terminal.terminalID %>">
+                                    <%= terminal.terminalName %>
+                                </option>
+                        <%  }
+                        } %>
+                    </select>
                 </label><br><br>
 
-                <label>Destination ID:<br>
-                    <input type="number" name="destinationID" required>
+                <label>Destination Terminal:<br>
+                    <select name="destinationID" required>
+                        <option value="">-- Select Destination --</option>
+                        <% if (terminalsForCreate != null) {
+                            for (Terminal terminal : terminalsForCreate) { %>
+                                <option value="<%= terminal.terminalID %>">
+                                    <%= terminal.terminalName %>
+                                </option>
+                        <%  }
+                        } %>
+                    </select>
                 </label><br><br>
 
                 <label>Distance:<br>
@@ -96,7 +146,7 @@
                 </label><br><br>
 
                 <label>Travel Time:<br>
-                    <input type="text" name="travelTime" required>
+                    <input type="text" name="travelTime" placeholder="hh:mm:ss" required> 
                 </label><br><br>
 
                 <label>Base Fare:<br>
@@ -122,8 +172,8 @@
                 <tr>
                     <th>ID</th>
                     <th>Route Name</th>
-                    <th>Origin ID</th>
-                    <th>Destination ID</th>
+                    <th>Origin Terminal</th>
+                    <th>Destination Terminal</th>
                     <th>Distance</th>
                     <th>Travel Time</th>
                     <th>Base Fare</th>
@@ -131,12 +181,29 @@
                 </tr>
             </thead>
             <tbody>
-            <% for(com.busterminal.model.Route rr : list) { %>
+            <% 
+                // Get terminals list and create a map for easy terminal name lookup
+                List<Terminal> terminals = (List<Terminal>) request.getAttribute("terminals");
+                // If terminals not loaded from controller, fetch them
+                if (terminals == null) {
+                    terminals = Terminal.getAllTerminals();
+                }
+                Map<Integer, String> terminalMap = new HashMap<>();
+                if (terminals != null) {
+                    for (Terminal t : terminals) {
+                        terminalMap.put(t.terminalID, t.terminalName);
+                    }
+                }
+                
+                for(com.busterminal.model.Route rr : list) { 
+                    String originName = terminalMap.get(rr.originID);
+                    String destName = terminalMap.get(rr.destinationID);
+            %>
                 <tr>
                     <td><%= rr.routeID %></td>
                     <td><%= rr.routeName %></td>
-                    <td><%= rr.originID %></td>
-                    <td><%= rr.destinationID %></td>
+                    <td><%= originName != null ? originName : "ID: " + rr.originID %></td>
+                    <td><%= destName != null ? destName : "ID: " + rr.destinationID %></td>
                     <td><%= rr.distance %></td>
                     <td><%= rr.travelTime %></td>
                     <td><%= rr.baseFare %></td>
