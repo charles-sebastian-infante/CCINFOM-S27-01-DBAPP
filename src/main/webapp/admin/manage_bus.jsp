@@ -1,4 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="com.busterminal.model.Terminal" %>
+<%@ page import="com.busterminal.model.Bus" %>
+<%@ page import="java.util.Map" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -41,7 +45,8 @@
 
     <!-- Edit form -->
     <% if(request.getAttribute("bus") != null) {
-        com.busterminal.model.Bus b = (com.busterminal.model.Bus) request.getAttribute("bus");
+        Bus b = (Bus) request.getAttribute("bus");
+        List<Terminal> terminals = (List<Terminal>) request.getAttribute("terminals");
     %>
         <div class="form-block">
             <h2>Edit Bus</h2>
@@ -66,7 +71,17 @@
                 </label><br><br>
 
                 <label>Current Terminal:<br>
-                    <input type="number" name="currentTerminal" value="<%= b.currentTerminal %>" required>
+                    <select name="currentTerminal" required>
+                        <option value="">-- Select Terminal --</option>
+                        <% if (terminals != null) {
+                            for (Terminal terminal : terminals) { %>
+                                <option value="<%= terminal.terminalID %>" 
+                                    <%= terminal.terminalID == b.currentTerminal ? "selected" : "" %>>
+                                    <%= terminal.terminalName %>
+                                </option>
+                        <%  }
+                        } %>
+                    </select>
                 </label><br><br>
 
                 <button type="submit" class="btn btn-edit">Update Bus</button>
@@ -77,6 +92,7 @@
     <!-- Create form -->
         <div class="form-block">
             <h2>Register New Bus</h2>
+            <% List<Terminal> terminalsForCreate = (List<Terminal>) request.getAttribute("terminals"); %>
             <form method="POST" action="<%= request.getContextPath() %>/bus" onsubmit="return validateBusForm(this);">
                 <input type="hidden" name="action" value="create">
 
@@ -97,7 +113,16 @@
                 </label><br><br>
 
                 <label>Current Terminal:<br>
-                    <input type="number" name="currentTerminal" required>
+                    <select name="currentTerminal" required>
+                        <option value="">-- Select Terminal --</option>
+                        <% if (terminalsForCreate != null) {
+                            for (Terminal terminal : terminalsForCreate) { %>
+                                <option value="<%= terminal.terminalID %>">
+                                    <%= terminal.terminalName %>
+                                </option>
+                        <%  }
+                        } %>
+                    </select>
                 </label><br><br>
 
                 <button type="submit" class="btn">Register Bus</button>
@@ -107,12 +132,14 @@
     <% } %>
 
     <!-- Buses list -->
-    <% if(request.getAttribute("buses") != null) {
-        java.util.List<com.busterminal.model.Bus> list = (java.util.List<com.busterminal.model.Bus>) request.getAttribute("buses");
-        if(list.size() == 0) {
+    <% 
+    List<Map<String, Object>> busesWithDetails = (List<Map<String, Object>>) request.getAttribute("busesWithDetails");
+    List<Bus> list = (List<Bus>) request.getAttribute("buses");
+    
+    if(list != null && list.size() == 0) {
     %>
         <p>No buses found.</p>
-    <%  } else { %>
+    <%  } else if(busesWithDetails != null && busesWithDetails.size() > 0) { %>
         <h2>All Buses</h2>
         <table>
             <thead>
@@ -126,18 +153,20 @@
                 </tr>
             </thead>
             <tbody>
-            <% for(com.busterminal.model.Bus bus : list) { %>
+            <% for(Map<String, Object> busDetail : busesWithDetails) { 
+                Bus bus = (Bus) busDetail.get("bus");
+                String terminalName = (String) busDetail.get("terminalName");
+            %>
                 <tr>
                     <td><%= bus.busID %></td>
                     <td><%= bus.busNumber %></td>
                     <td><%= bus.capacity %></td>
                     <td><%= bus.status %></td>
-                    <td><%= bus.currentTerminal %></td>
+                    <td><%= terminalName != null ? terminalName : "N/A" %></td>
                     <td>
                         <a class="btn btn-edit" href="<%= request.getContextPath() %>/bus?action=edit&id=<%= bus.busID %>">Edit</a>
                         
-                        <form method="POST" action="<%= request.getContextPath() %>/bus" style="display:inline;" 
-                              onsubmit="return confirmDelete(<%= bus.busID %>)">
+                        <form method="POST" action="<%= request.getContextPath() %>/bus" style="display:inline;" onsubmit="return confirm('Delete bus ID <%= bus.busID %>?') ? true : false;">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<%= bus.busID %>">
                             <button type="submit" class="btn btn-delete">Delete</button>
@@ -147,8 +176,7 @@
             <% } %>
             </tbody>
         </table>
-    <%  }
-    } %>
+    <%  } %>
 
 </body>
 </html>
