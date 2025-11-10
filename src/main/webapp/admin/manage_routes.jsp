@@ -35,12 +35,12 @@
     <% } %>
 
     <% if(request.getAttribute("error") != null) { %>
-        <p style="color:red;"><%= request.getAttribute("error: Invalid value inputted") %></p>
+        <p style="color:red;"><%= request.getAttribute("error") %></p>
     <% } %>
 
     <!-- Edit form (shown when a single 'route' attribute is present) -->
     <% if(request.getAttribute("route") != null) {
-        Route r = (Route) request.getAttribute("     route");
+        Route r = (Route) request.getAttribute("route");
         List<Terminal> terminals = (List<Terminal>) request.getAttribute("terminals");
     %>
         <div class="form-block">
@@ -94,7 +94,7 @@
                 </label><br><br>
 
                 <button type="submit" class="btn btn-edit">Update Route</button>
-                <a href="<%= request.getContextPath() %>/route?action=list">Cancel</a>
+                <a href="<%= request.getContextPath() %>/route?action=list">View Routes</a>
             </form>
         </div>
     <% } else { %>
