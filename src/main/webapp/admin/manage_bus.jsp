@@ -43,6 +43,21 @@
         <p style="color:red;"><%= request.getAttribute("error") %></p>
     <% } %>
 
+    <% 
+        // Display validation errors
+        Map<String, String> validationErrors = (Map<String, String>) request.getAttribute("validationErrors");
+        if (validationErrors != null && !validationErrors.isEmpty()) {
+    %>
+        <div style="color:red; background-color:#ffe6e6; padding:10px; margin:10px 0; border-radius:5px;">
+            <strong>Validation Errors:</strong>
+            <ul>
+            <% for (Map.Entry<String, String> error : validationErrors.entrySet()) { %>
+                <li><strong><%= error.getKey() %>:</strong> <%= error.getValue() %></li>
+            <% } %>
+            </ul>
+        </div>
+    <% } %>
+
     <!-- Edit form -->
     <% if(request.getAttribute("bus") != null) {
         Bus b = (Bus) request.getAttribute("bus");
@@ -67,6 +82,12 @@
                         <option value="Available" <%= "Available".equals(b.status) ? "selected" : "" %>>Available</option>
                         <option value="In Transit" <%= "In Transit".equals(b.status) ? "selected" : "" %>>In Transit</option>
                         <option value="Maintenance" <%= "Maintenance".equals(b.status) ? "selected" : "" %>>Maintenance</option>
+                        <% 
+                            // Only show "Out of Order" option if current status is Available, Maintenance, or Out of Order
+                            if ("Available".equals(b.status) || "Maintenance".equals(b.status) || "Out of Order".equals(b.status)) { 
+                        %>
+                        <option value="Out of Order" <%= "Out of Order".equals(b.status) ? "selected" : "" %>>Out of Order</option>
+                        <% } %>
                     </select>
                 </label><br><br>
 
@@ -92,7 +113,13 @@
     <!-- Create form -->
         <div class="form-block">
             <h2>Register New Bus</h2>
-            <% List<Terminal> terminalsForCreate = (List<Terminal>) request.getAttribute("terminals"); %>
+            <% 
+                List<Terminal> terminalsForCreate = (List<Terminal>) request.getAttribute("terminals");
+                // If terminals not loaded from controller, fetch them
+                if (terminalsForCreate == null) {
+                    terminalsForCreate = Terminal.getAllTerminals();
+                }
+            %>
             <form method="POST" action="<%= request.getContextPath() %>/bus" onsubmit="return validateBusForm(this);">
                 <input type="hidden" name="action" value="create">
 
