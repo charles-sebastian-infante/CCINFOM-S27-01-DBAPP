@@ -13,10 +13,10 @@ A database application for managing bus terminal operations including ticket sal
 
 ## Team Members
 
-- **GUARIN, Raine Louise R.** - Terminal Management & Ticket Purchase
-- **INFANTE, Charles Sebastian V.** - Route Management & Bus Departure Process  
-- **MIRANDA, Bien Aouien C.** - Ticket Management & Bus Assignment
-- **RANARA, Ramil Carlos B.** - Bus Management & Schedule Creation
+- **GUARIN, Raine Louise R.** - Ticket Purchase & Bus Utilization
+- **INFANTE, Charles Sebastian V.** - Staff Reassignment & Route Usage
+- **MIRANDA, Bien Aouien C.** - Bus Scheduling & Scheduled Trips
+- **RANARA, Ramil Carlos B.** - Bus Maintenance & Maintenance Report
 
 ## Project Overview
 
@@ -33,29 +33,28 @@ Based on our approved proposal, this system will address the limitations of Exce
 ### Core Record Management (From Proposal)
 - **Terminal Records** - Location and operational details
 - **Bus Records** - Fleet information and status tracking
-- **Ticket Records** - Passenger bookings with departure details
-- **Route Records** - Origin/destination pairs with fare structure
+- **Staff Records** - Staff information and shift tracking
+- **Route Records** - Origin/destination pairs
 
 ### Planned Transactions
-1. **Ticket Purchase Process** - Complete booking workflow with capacity validation
-2. **Bus Departure Process** - Passenger manifest and status updates
-3. **Ticket Cancellation** - Refund processing with policy enforcement
-4. **Route Schedule Creation** - Bus and driver assignment to routes
+1. **Bus Maintenance Process** - Refund processing with policy enforcement
+2. **Staff Reassignment Process** - Reallocation of staff across terminal network
+3. **Ticket Purchase Process** - Complete booking workflow with capacity validation
+4. **Bus Scheduling Process** - Bus and driver assignment to routes
 
 ### Planned Reports
-- Terminal revenue analysis (daily/monthly)
-- Route performance metrics
-- Payment method summaries
+- Scheduled trips dashboard
+- Route usage analysis (monthly/yearly)
+- Bus maintenance summary (monthly)
 - Bus utilization tracking
 
 ## Technology Stack
 
-**Note: Technology choices are still being finalized**
-
-- **Backend:** TBH
+- **Backend:** Java (Servlets, JSP)
+- **Frontend:** Jakarta Server Pages (JSP), HTML, CSS, JavaScript
 - **Database:** MySQL
-- **Frontend:** TBD 
 - **Architecture:** 3-tier system design (required by course)
+- **Deployment:** Local deployment via Apache Tomcat 9
 
 ## Current Status
 
@@ -65,16 +64,14 @@ Based on our approved proposal, this system will address the limitations of Exce
 - [x] Core database tables defined
 - [x] Transaction workflows planned
 - [x] Report requirements specified
+- [X] Database system selection
+- [X] UI framework decision
+- [X] Database schema implementation
+- [X] Development environment setup
+- [X] Database design and creation
+- [X] Sample data population (minimum 10 records per table)
 
 ### In Progress
-- [ ] Database system selection
-- [ ] UI framework decision
-- [ ] Database schema implementation
-- [ ] Development environment setup
-
-### Upcoming (Weeks 8-12)
-- [ ] Database design and creation
-- [ ] Sample data population (minimum 10 records per table)
 - [ ] Core record management implementation
 - [ ] Transaction development
 - [ ] Report generation features
@@ -95,9 +92,7 @@ bus-terminal-management/
 ```
 
 ### Next Steps for Team
-1. **Week 4-5:** Finalize technology stack decisions
-2. **Week 6-7:** Set up development environment and database
-3. **Week 8+:** Begin implementation according to proposal
+1. **Week 8+:** Begin implementation according to proposal
 
 ## Development Guidelines
 
@@ -150,11 +145,11 @@ Each member is assigned specific components as per the approved proposal. See pr
 
 ## Notes
 
-**Project Status:** Proposal approved by Professor Francia with minor feedback regarding Ticket Record Management structure. Final adjustments to be made before beginning implementation.
+**Project Status:** The team has begun with developing the app. The backend has been slightly refactored and frontend for the most part needs styling.
 
 For the most up-to-date project requirements, refer to the approved proposal document and any additional feedback from Professor Francia.
 
 ---
 
-**Last Updated:** September 2025  
-**Project Status:** Proposal Approved - Ready to Begin Development
+**Last Updated:** November 2025  
+**Project Status:** In Development
