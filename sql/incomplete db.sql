@@ -3,6 +3,8 @@
 -- =====================================================
 -- 1.0 Create Database
 
+-- DROP DATABASE bus_terminal_management;
+
 CREATE DATABASE bus_terminal_management;
 USE bus_terminal_management; 
 
@@ -29,10 +31,10 @@ CREATE TABLE Route (
     base_fare DECIMAL(10,2), -- this is where we get the price
     FOREIGN KEY (origin_id) REFERENCES Terminal(terminal_id)
         ON UPDATE CASCADE
-        ON DELETE SET NULL,
+        ON DELETE CASCADE,
     FOREIGN KEY (destination_id) REFERENCES Terminal(terminal_id)
         ON UPDATE CASCADE
-        ON DELETE SET NULL
+        ON DELETE CASCADE
 );
 
 -- =====================================================
@@ -43,7 +45,7 @@ CREATE TABLE Bus (
     bus_id INT PRIMARY KEY AUTO_INCREMENT,
     bus_number VARCHAR(20) UNIQUE NOT NULL,
     capacity INT NOT NULL DEFAULT 45,
-    status ENUM('Available', 'In Transit', 'Scheduled', 'Maintenance') DEFAULT 'Available',
+    status ENUM('Available', 'In Transit', 'Scheduled', 'Maintenance', 'Out of Order') DEFAULT 'Available',
     current_terminal INT,
     FOREIGN KEY (current_terminal) REFERENCES Terminal(terminal_id)
         ON UPDATE CASCADE
@@ -139,8 +141,3 @@ CREATE TABLE Maintenance (
         ON DELETE CASCADE,
 	CHECK (completion_time IS NULL OR completion_time > starting_date)
 );
-
-
-
-
-
