@@ -36,12 +36,28 @@
         <p style="color:red;"><%= request.getAttribute("error") %></p>
     <% } %>
 
+    <% 
+        // Display validation errors
+        Map<String, String> validationErrors = (Map<String, String>) request.getAttribute("validationErrors");
+        if (validationErrors != null && !validationErrors.isEmpty()) {
+    %>
+        <div style="color:red; background-color:#ffe6e6; padding:10px; margin:10px 0; border-radius:5px;">
+            <strong>Validation Errors:</strong>
+            <ul>
+            <% for (Map.Entry<String, String> error : validationErrors.entrySet()) { %>
+                <li><strong><%= error.getKey() %>:</strong> <%= error.getValue() %></li>
+            <% } %>
+            </ul>
+        </div>
+    <% } %>
+
     <!-- Create Schedule Form -->
     <div class="form-block">
         <h2>Create New Schedule</h2>
         <% 
             List<Bus> buses = (List<Bus>) request.getAttribute("buses");
             List<Route> routes = (List<Route>) request.getAttribute("routes");
+            com.busterminal.model.Terminal terminal = null;
             
             // Fallback: Load if not provided
             if (buses == null) {
@@ -51,16 +67,20 @@
                 routes = Route.getAllRoutes();
             }
         %>
-        <form method="POST" action="<%= request.getContextPath() %>/schedule">
+        <form method="POST" action="<%= request.getContextPath() %>/schedule" id="scheduleForm">
             <input type="hidden" name="action" value="create">
 
             <label>Bus:<br>
-                <select name="busID" required style="width:300px;">
+                <select name="busID" required style="width:400px;">
                     <option value="">-- Select Bus --</option>
                     <% if (buses != null) {
-                        for (Bus bus : buses) { %>
+                        for (Bus bus : buses) { 
+                            terminal = new com.busterminal.model.Terminal();
+                            terminal.terminalID = bus.currentTerminal;
+                            terminal.getRecord();
+                    %>
                             <option value="<%= bus.busID %>">
-                                <%= bus.busNumber %> (Capacity: <%= bus.capacity %>) - <%= bus.status %>
+                                <%= bus.busNumber %> (Capacity: <%= bus.capacity %>) - <%= bus.status %> - Terminal: <%= terminal.terminalName %>
                             </option>
                     <%  }
                     } %>
@@ -68,12 +88,12 @@
             </label><br><br>
 
             <label>Route:<br>
-                <select name="routeID" required style="width:300px;">
+                <select name="routeID" id="routeSelect" required style="width:400px;">
                     <option value="">-- Select Route --</option>
                     <% if (routes != null) {
                         for (Route route : routes) { %>
-                            <option value="<%= route.routeID %>">
-                                <%= route.routeName %> (<%= route.distance %> km)
+                            <option value="<%= route.routeID %>" data-travel-time="<%= route.travelTime %>">
+                                <%= route.routeName %> (<%= route.distance %> km, Travel: <%= route.travelTime %>)
                             </option>
                     <%  }
                     } %>
@@ -81,22 +101,68 @@
             </label><br><br>
 
             <label>Departure Date:<br>
-                <input type="date" name="departureDate" required>
+                <input type="date" name="departureDate" id="departureDate" required>
             </label>
             <label>Departure Time:<br>
-                <input type="time" name="departureTime" required>
+                <input type="time" name="departureTime" id="departureTime" required>
             </label><br><br>
 
-            <label>Arrival Date:<br>
-                <input type="date" name="arrivalDate" required>
+            <label>Arrival Date: <span style="color:#666;">(Auto)</span><br>
+                <input type="date" name="arrivalDate" id="arrivalDate" required readonly style="background:#f0f0f0;">
             </label>
-            <label>Arrival Time:<br>
-                <input type="time" name="arrivalTime" required>
+            <label>Arrival Time: <span style="color:#666;">(Auto)</span><br>
+                <input type="time" name="arrivalTime" id="arrivalTime" required readonly style="background:#f0f0f0;">
             </label><br><br>
 
             <button type="submit" class="btn" style="background:#2ecc71;color:#fff;">Create Schedule</button>
             <a href="<%= request.getContextPath() %>/schedule?action=list" class="btn" style="background:#95a5a6;color:#fff;">View All Schedules</a>
         </form>
+
+        <script>
+            // Auto-calculate arrival date/time based on route's travel time
+            function calculateArrival() {
+                const routeSelect = document.getElementById('routeSelect');
+                const departureDate = document.getElementById('departureDate').value;
+                const departureTime = document.getElementById('departureTime').value;
+                
+                if (!routeSelect.value || !departureDate || !departureTime) {
+                    return;
+                }
+                
+                // Get selected route's travel time
+                const selectedOption = routeSelect.options[routeSelect.selectedIndex];
+                const travelTimeStr = selectedOption.getAttribute('data-travel-time');
+                
+                if (!travelTimeStr) {
+                    return;
+                }
+                
+                // Parse travel time (format: HH:mm:ss)
+                const travelTimeParts = travelTimeStr.split(':');
+                const travelHours = parseInt(travelTimeParts[0]);
+                const travelMinutes = parseInt(travelTimeParts[1]);
+                
+                // Parse departure datetime
+                const departureDateTime = new Date(departureDate + 'T' + departureTime);
+                
+                // Add travel time
+                departureDateTime.setHours(departureDateTime.getHours() + travelHours);
+                departureDateTime.setMinutes(departureDateTime.getMinutes() + travelMinutes);
+                
+                // Format arrival date and time
+                const arrivalDate = departureDateTime.toISOString().split('T')[0];
+                const arrivalTime = departureDateTime.toTimeString().split(' ')[0].substring(0, 5);
+                
+                // Set arrival fields
+                document.getElementById('arrivalDate').value = arrivalDate;
+                document.getElementById('arrivalTime').value = arrivalTime;
+            }
+            
+            // Add event listeners
+            document.getElementById('routeSelect').addEventListener('change', calculateArrival);
+            document.getElementById('departureDate').addEventListener('change', calculateArrival);
+            document.getElementById('departureTime').addEventListener('change', calculateArrival);
+        </script>
     </div>
 
     <!-- Schedules List -->
