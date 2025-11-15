@@ -9,25 +9,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Manage Schedules</title>
-    <style>
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #f4f4f4; }
-        .form-block { margin: 20px 0; padding: 12px; border: 1px solid #ddd; background:#fafafa; }
-        .btn { padding:6px 10px; margin-right:6px; text-decoration:none; display:inline-block; }
-        .btn-delete { background:#e74c3c; color:#fff; border:none; cursor:pointer; }
-        .btn-edit { background:#3498db; color:#fff; border:none; }
-        .btn-view { background:#2ecc71; color:#fff; border:none; }
-        .status-scheduled { color: #3498db; font-weight: bold; }
-        .status-departed { color: #f39c12; font-weight: bold; }
-        .status-completed { color: #2ecc71; font-weight: bold; }
-        .status-cancelled { color: #e74c3c; font-weight: bold; }
-        .filter-section { background: #f9f9f9; padding: 10px; margin: 10px 0; border: 1px solid #ddd; }
-    </style>
+
 </head>
 <body>
     <h1>Manage Schedules</h1>
-
+    <link rel="stylesheet" href="style/manage_schedules.css">
+    <link rel="stylesheet" href="style/global.css">
     <% if(request.getAttribute("success") != null) { %>
         <p style="color:green;"><%= request.getAttribute("success") %></p>
     <% } %>
@@ -246,6 +233,8 @@
         </table>
     <%  }
     } %>
+
+    <a href="<%= request.getContextPath() %>/" class="fixed-button">Back to Home</a>
 
 </body>
 </html>

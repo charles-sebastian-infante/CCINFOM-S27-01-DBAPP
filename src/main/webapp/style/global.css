@@ -1,0 +1,49 @@
+.fixed-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 15px;
+    background: #304674;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+}
+
+.fixed-button:hover {
+    background: #c6d3e3;
+    border: 2px solid #304674;
+    color: #304674;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: #c6d3e3;
+    font-family: "Roboto", sans-serif;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+h1 {
+    font-family: "Montserrat", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #304674;
+    text-align: center;
+    margin: 30px 0;
+    font-size: 35px;
+}
+
+h2 {
+    font-family: "Montserrat", sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: black;
+    font-size: 28px;
+    margin-bottom: 20px;
+    text-align: center;
+}

@@ -3,6 +3,8 @@
 <html>
 <head>
     <title>Bus Terminal Management</title>
+    <link rel="stylesheet" href="style/index.css">
+    <link rel="stylesheet" href="style/global.css">
 </head>
 <body>
     <h1>Welcome to Bus Terminal Management System</h1>
@@ -12,6 +14,7 @@
         <li><a href="route?action=list">Routes</a></li>
         <li><a href="staff?action=list">Staff</a></li>
         <li><a href="ticket?action=list">Tickets</a></li>
+        <li><a href="schedule?action=list">Schedules</a></li>
         <li><a href="reports">Reports</a></li>
     </ul>
 </body>

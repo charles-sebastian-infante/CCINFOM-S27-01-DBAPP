@@ -5,16 +5,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Manage Staff</title>
-    <link rel="stylesheet" href="../assets/css/admin.css">
-    <style>
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #f4f4f4; }
-        .form-block { margin: 20px 0; padding: 12px; border: 1px solid #ddd; background:#fafafa; }
-        .btn { padding:6px 10px; margin-right:6px; }
-        .btn-delete { background:#e74c3c; color:#fff; border:none; }
-        .btn-edit { background:#3498db; color:#fff; border:none; }
-    </style>
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/style/manage_staff.css">
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/style/global.css">
+
     <script>
         function confirmDelete() {
             return confirm('Are you sure you want to delete this staff member?');
@@ -160,5 +153,8 @@
     <%  }
     } %>
     </div>
+
+    <a href="<%= request.getContextPath() %>/" class="fixed-button">Back to Home</a>
+
 </body>
 </html>

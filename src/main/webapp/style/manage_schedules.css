@@ -1,0 +1,140 @@
+@import url("https://fonts.googleapis.com/css?family=Montserrat:700");
+@import url("https://fonts.googleapis.com/css?family=Roboto:400,500");
+
+.form-block {
+    margin: 30px auto;
+    padding: 30px;
+    background: white;
+    max-width: 800px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.form-block label {
+    display: inline-block;
+    margin-bottom: 10px;
+    font-weight: 500;
+    color: black;
+}
+
+.form-block input,
+.form-block select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.form-block input:focus,
+.form-block select:focus {
+    outline: none;
+    border-color: #304674;
+}
+
+.btn {
+    padding: 10px 18px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.btn-edit {
+    background-color: #3498db;
+    color: #fff;
+}
+
+.btn-edit:hover {
+    background-color: #2980b9;
+}
+
+.btn-delete {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: #c0392b;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 1200px;
+    margin: 30px auto;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+}
+
+th {
+    background: #304674;
+    color: white;
+    font-family: "Montserrat", sans-serif;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+tbody tr:hover {
+    background-color: #f3f3f3;
+}
+
+.status-scheduled { color: #2980b9; font-weight: 600; }
+.status-departed { color: #f39c12; font-weight: 600; }
+.status-completed { color: #27ae60; font-weight: 600; }
+.status-cancelled { color: #e74c3c; font-weight: 600; }
+
+.filter-section {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 15px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.filter-section select,
+.filter-section input[type="date"] {
+    padding: 7px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.fixed-button {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    background: #3498db;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-family: "Roboto", sans-serif;
+    font-weight: 500;
+    text-decoration: none;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    transition: background 0.3s ease;
+}
+
+.fixed-button:hover {
+    background: #2980b9;
+}
+
+
