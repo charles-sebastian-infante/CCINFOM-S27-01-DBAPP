@@ -1,5 +1,8 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.util.Map, java.util.List" %>
+<%@ page import="com.busterminal.model.Role" %>
+<%@ page import="com.busterminal.model.Bus" %>
+<%@ page import="com.busterminal.model.Terminal" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -40,15 +43,45 @@
                 </label><br><br>
 
                 <label>Role:<br>
-                    <input type="text" name="roleID" value="<%= s.roleID != 0 ? s.roleID : "" %>" required>
+                    <select name="roleID" required>
+                        <option value="">-- Select Role --</option>
+                        <% 
+                            List<Role> roles = Role.getAllRoles();
+                            for (Role role : roles) { 
+                        %>
+                            <option value="<%= role.roleID %>" <%= role.roleID == s.roleID ? "selected" : "" %>>
+                                <%= role.roleName %>
+                            </option>
+                        <% } %>
+                    </select>
                 </label><br><br>
 
                 <label>Assigned Terminal:<br>
-                    <input type="number" name="assignedTerminal" value="<%= s.assignedTerminal %>" required>
+                    <select name="assignedTerminal" required>
+                        <option value="">-- Select Terminal --</option>
+                        <% 
+                            List<Terminal> terminals = Terminal.getAllTerminals();
+                            for (Terminal terminal : terminals) { 
+                        %>
+                            <option value="<%= terminal.terminalID %>" <%= terminal.terminalID == s.assignedTerminal ? "selected" : "" %>>
+                                <%= terminal.terminalName %>
+                            </option>
+                        <% } %>
+                    </select>
                 </label><br><br>
 
                 <label>Assigned Bus:<br>
-                    <input type="number" name="assignedBus" value="<%= s.assignedBus %>" required>
+                    <select name="assignedBus">
+                        <option value="0">-- No Bus Assigned --</option>
+                        <% 
+                            List<Bus> buses = Bus.getAvailableBuses();
+                            for (Bus bus : buses) { 
+                        %>
+                            <option value="<%= bus.busID %>" <%= bus.busID == s.assignedBus ? "selected" : "" %>>
+                                <%= bus.busNumber %> (Capacity: <%= bus.capacity %>)
+                            </option>
+                        <% } %>
+                    </select>
                 </label><br><br>
 
                 <label>Shift:<br>
@@ -79,15 +112,39 @@
                 </label><br><br>
 
                 <label>Role:<br>
-                    <input type="text" name="roleID" required>
+                    <select name="roleID" required>
+                        <option value="">-- Select Role --</option>
+                        <% 
+                            List<Role> roles = Role.getAllRoles();
+                            for (Role role : roles) { 
+                        %>
+                            <option value="<%= role.roleID %>"><%= role.roleName %></option>
+                        <% } %>
+                    </select>
                 </label><br><br>
 
                 <label>Assigned Terminal:<br>
-                    <input type="number" name="assignedTerminal" required>
+                    <select name="assignedTerminal" required>
+                        <option value="">-- Select Terminal --</option>
+                        <% 
+                            List<Terminal> terminals = Terminal.getAllTerminals();
+                            for (Terminal terminal : terminals) { 
+                        %>
+                            <option value="<%= terminal.terminalID %>"><%= terminal.terminalName %></option>
+                        <% } %>
+                    </select>
                 </label><br><br>
 
                 <label>Assigned Bus:<br>
-                    <input type="number" name="assignedBus" required>
+                    <select name="assignedBus">
+                        <option value="0">-- No Bus Assigned --</option>
+                        <% 
+                            List<Bus> buses = Bus.getAvailableBuses();
+                            for (Bus bus : buses) { 
+                        %>
+                            <option value="<%= bus.busID %>"><%= bus.busNumber %> (Capacity: <%= bus.capacity %>)</option>
+                        <% } %>
+                    </select>
                 </label><br><br>
 
                 <label>Shift:<br>
