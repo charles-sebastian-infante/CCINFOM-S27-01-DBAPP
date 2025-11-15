@@ -48,6 +48,11 @@ public class StaffController extends HttpServlet {
             ResultSet rs = pStmt.executeQuery();
             
             List<Staff> staffList = new ArrayList<>();
+            List<Map<String,String>> displayList = new ArrayList<>();
+            Map<Integer, String> busMap = getBusNames();
+            Map<Integer, String> terminalMap = getTerminalNames();
+            Map<Integer, String> roleMap = getRoleNames();
+
             while(rs.next()) {
                 Staff s = new Staff();
                 s.staffID = rs.getInt("staff_id");
@@ -59,8 +64,19 @@ public class StaffController extends HttpServlet {
                 s.contact = rs.getString("contact");
                 staffList.add(s);
             }
-            
-            request.setAttribute("staffList", staffList);
+
+            for (Staff s : staffList){
+                Map<String, String> row = new HashMap<>();
+                row.put("staffID", String.valueOf(s.staffID));
+                row.put("staffName", String.valueOf(s.staffName));
+                row.put("role", roleMap.get(s.roleID));
+                row.put("assigned_terminal", terminalMap.get(s.assignedTerminal));
+                row.put("assigned_bus", busMap.get(s.assignedBus));
+                row.put("shift", String.valueOf(s.shift));
+                row.put("contact", String.valueOf(s.contact));
+                displayList.add(row);
+            }
+            request.setAttribute("staffList", displayList);
             request.getRequestDispatcher("/admin/manage_staff.jsp")
                 .forward(request, response);
         } catch (Exception e) {
@@ -225,5 +241,59 @@ public class StaffController extends HttpServlet {
             request.setAttribute("error", "Error: " + e.getMessage());
             response.sendRedirect("staff");
         }
+    }
+
+    private Map<Integer, String> getRoleNames() throws SQLException {
+        Map<Integer, String> map = new HashMap<>();
+
+        Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(
+                "SELECT role_id, role_name FROM role"
+        );
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()){
+            map.put(rs.getInt("role_id"), rs.getString("role_name"));
+        }
+        rs.close();
+        ps.close();
+        conn.close();
+        return map;
+    }
+
+    private Map<Integer, String> getTerminalNames() throws SQLException {
+        Map<Integer, String> map = new HashMap<>();
+
+        Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(
+                "SELECT terminal_id, terminal_name FROM terminal"
+        );
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()){
+            map.put(rs.getInt("terminal_id"), rs.getString("terminal_name"));
+        }
+        rs.close();
+        ps.close();
+        conn.close();
+        return map;
+    }
+
+    private Map<Integer, String> getBusNames() throws SQLException {
+        Map<Integer, String> map = new HashMap<>();
+
+        Connection conn = DBConnection.getConnection();
+        PreparedStatement ps = conn.prepareStatement(
+                "SELECT bus_id, bus_number FROM bus"
+        );
+        ResultSet rs = ps.executeQuery();
+
+        while (rs.next()){
+            map.put(rs.getInt("bus_id"), rs.getString("bus_number"));
+        }
+        rs.close();
+        ps.close();
+        conn.close();
+        return map;
     }
 }

@@ -1,4 +1,5 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.Map, java.util.List" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -46,7 +47,7 @@
                 </label><br><br>
 
                 <label>Role:<br>
-                    <input type="text" name="role" value="<%= s.role != null ? s.role : "" %>" required>
+                    <input type="text" name="roleID" value="<%= s.roleID != 0 ? s.roleID : "" %>" required>
                 </label><br><br>
 
                 <label>Assigned Terminal:<br>
@@ -58,7 +59,10 @@
                 </label><br><br>
 
                 <label>Shift:<br>
-                    <input type="text" name="shift" value="<%= s.shift != null ? s.shift : "" %>" required>
+                    <select name="shift" required>
+                        <option value="Morning" <%= "Morning".equals(s.shift) ? "selected" : "" %>>Morning</option>
+                        <option value="Evening" <%= "Evening".equals(s.shift) ? "selected" : "" %>>Evening</option>
+                    </select>
                 </label><br><br>
 
                 <label>Contact:<br>
@@ -69,7 +73,7 @@
                 <a href="<%= request.getContextPath() %>/staff?action=list">Cancel</a>
             </form>
         </div>
-    <% } else { %>
+        <% } else { %>
 
     <!-- Create form -->
         <div class="form-block">
@@ -82,7 +86,7 @@
                 </label><br><br>
 
                 <label>Role:<br>
-                    <input type="text" name="role" required>
+                    <input type="text" name="roleID" required>
                 </label><br><br>
 
                 <label>Assigned Terminal:<br>
@@ -94,7 +98,10 @@
                 </label><br><br>
 
                 <label>Shift:<br>
-                    <input type="text" name="shift" required>
+                    <select name="shift" required>
+                        <option value="Morning"> Morning </option>
+                        <option value="Evening"> Evening </option>
+                    </select>
                 </label><br><br>
 
                 <label>Contact:<br>
@@ -107,6 +114,7 @@
     <% } %>
 
     <!-- Staff list -->
+    <div class="staffList">
     <% if(request.getAttribute("staffList") != null) {
         java.util.List<com.busterminal.model.Staff> list = (java.util.List<com.busterminal.model.Staff>) request.getAttribute("staffList");
         if(list.size() == 0) {
@@ -128,29 +136,29 @@
                 </tr>
             </thead>
             <tbody>
-            <% for(com.busterminal.model.Staff st : list) { %>
-                <tr>
-                    <td><%= st.staffID %></td>
-                    <td><%= st.staffName %></td>
-                    <td><%= st.role %></td>
-                    <td><%= st.assignedTerminal %></td>
-                    <td><%= st.assignedBus %></td>
-                    <td><%= st.shift %></td>
-                    <td><%= st.contact %></td>
-                    <td>
-                        <a class="btn btn-edit" href="<%= request.getContextPath() %>/staff?action=edit&id=<%= st.staffID %>">Edit</a>
-                        <form method="POST" action="<%= request.getContextPath() %>/staff" style="display:inline;" onsubmit="return confirmDelete();">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="id" value="<%= st.staffID %>">
-                            <button type="submit" class="btn btn-delete">Delete</button>
-                        </form>
-                    </td>
-                </tr>
+            <% for(Map<String,String> st : (List<Map<String,String>>) request.getAttribute("staffList")) { %>
+            <tr>
+                <td><%= st.get("staffID") %></td>
+                <td><%= st.get("staffName") %></td>
+                <td><%= st.get("role") %></td>
+                <td><%= st.get("assigned_terminal") %></td>
+                <td><%= st.get("assigned_bus") != null ? st.get("assigned_bus") : "No Assigned Bus"%></td>
+                <td><%= st.get("shift") %></td>
+                <td><%= st.get("contact") %></td>
+                <td>
+                    <a class="btn btn-edit" href="<%= request.getContextPath() %>/staff?action=edit&id=<%= st.get("staffID") %>">Edit</a>
+                    <form method="POST" action="<%= request.getContextPath() %>/staff" style="display:inline;" onsubmit="return confirmDelete();">
+                        <input type="hidden" name="action" value="delete">
+                        <input type="hidden" name="id" value="<%= st.get("staffID") %>">
+                        <button type="submit" class="btn btn-delete">Delete</button>
+                    </form>
+                </td>
+            </tr>
             <% } %>
             </tbody>
         </table>
     <%  }
     } %>
-
+    </div>
 </body>
 </html>
