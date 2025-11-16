@@ -15,6 +15,7 @@
         <li><a href="staff?action=list">Staff</a></li>
         <li><a href="ticket?action=list">Tickets</a></li>
         <li><a href="schedule?action=list">Schedules</a></li>
+        <li><a href="maintenance?action=list">Maintenance</a></li>
         <li><a href="reports">Reports</a></li>
     </ul>
 </body>
