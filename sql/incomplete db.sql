@@ -1,10 +1,7 @@
 -- =====================================================
 -- 0.0 Reset
 -- =====================================================
--- 1.0 Create Database
-
--- DROP DATABASE bus_terminal_management;
-
+DROP DATABASE IF EXISTS bus_terminal_management;
 CREATE DATABASE bus_terminal_management;
 USE bus_terminal_management; 
 
@@ -15,7 +12,7 @@ CREATE TABLE Terminal (
     terminal_id INT PRIMARY KEY AUTO_INCREMENT,
     terminal_name VARCHAR(100) UNIQUE NOT NULL,
     address VARCHAR(255) NOT NULL,
-    phone VARCHAR(20) 
+    phone VARCHAR(20) UNIQUE  -- ADDED UNIQUE constraint per requirements
 );
 
 -- =====================================================
@@ -28,18 +25,24 @@ CREATE TABLE Route (
     destination_id INT, 
     distance DECIMAL(10,2),
     travel_time TIME,
-    base_fare DECIMAL(10,2), -- this is where we get the price
+    base_fare DECIMAL(10,2),
+    
+    -- BUG FIX #1: Changed from CASCADE to RESTRICT
+    -- This prevents terminal deletion if routes exist
     FOREIGN KEY (origin_id) REFERENCES Terminal(terminal_id)
         ON UPDATE CASCADE
-        ON DELETE CASCADE,
+        ON DELETE RESTRICT,  -- CHANGED: Prevents deletion
+        
     FOREIGN KEY (destination_id) REFERENCES Terminal(terminal_id)
         ON UPDATE CASCADE
-        ON DELETE CASCADE
+        ON DELETE RESTRICT  -- CHANGED: Prevents deletion
+    
+    -- BUG FIX #2: CHECK constraint removed due to MySQL limitation
+    -- Validation handled in RouteController.java (already implemented)
 );
 
 -- =====================================================
--- 5.0 Table: Bus
--- Each bus is linked to a predetermined schedule
+-- 4.0 Table: Bus
 -- =====================================================
 CREATE TABLE Bus (
     bus_id INT PRIMARY KEY AUTO_INCREMENT,
@@ -47,53 +50,62 @@ CREATE TABLE Bus (
     capacity INT NOT NULL DEFAULT 45,
     status ENUM('Available', 'In Transit', 'Scheduled', 'Maintenance', 'Out of Order') DEFAULT 'Available',
     current_terminal INT,
+    
     FOREIGN KEY (current_terminal) REFERENCES Terminal(terminal_id)
         ON UPDATE CASCADE
-        ON DELETE SET NULL,
-	CHECK (capacity BETWEEN 10 AND 100)
+        ON DELETE SET NULL,  -- Bus can exist without terminal assignment
+        
+    CHECK (capacity BETWEEN 10 AND 100)
 );
 
 -- =====================================================
--- 4.0 Table: Schedule
+-- 5.0 Table: Schedule
 -- =====================================================
-
 CREATE TABLE Schedule (
     schedule_id INT PRIMARY KEY AUTO_INCREMENT,
     bus_id INT NOT NULL,
-	route_id INT NOT NULL,
+    route_id INT NOT NULL,
     departure_time DATETIME NOT NULL,
     arrival_time DATETIME,
-    status ENUM('Scheduled', 'Departed', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
+    status ENUM('Scheduled', 'Departed', 'In Transit', 'Completed', 'Cancelled') DEFAULT 'Scheduled',
+    
+    -- CHANGED: RESTRICT prevents deleting bus/route with schedules
     FOREIGN KEY (bus_id) REFERENCES Bus(bus_id)
         ON UPDATE CASCADE
-        ON DELETE CASCADE,
-	FOREIGN KEY (route_id) REFERENCES Route(route_id)
+        ON DELETE RESTRICT,  -- CHANGED: Can't delete bus with schedules
+        
+    FOREIGN KEY (route_id) REFERENCES Route(route_id)
         ON UPDATE CASCADE
-        ON DELETE CASCADE,
-	CONSTRAINT chk_valid_time CHECK (arrival_time > departure_time)
+        ON DELETE RESTRICT,  -- CHANGED: Can't delete route with schedules
+        
+    CONSTRAINT chk_valid_time CHECK (arrival_time > departure_time)
 );
 
 -- =====================================================
--- 5.0 Table: Ticket
+-- 6.0 Table: Ticket
 -- =====================================================
 CREATE TABLE Ticket (
     ticket_id INT PRIMARY KEY AUTO_INCREMENT,
     ticket_number VARCHAR(20) UNIQUE NOT NULL,
     schedule_id INT NOT NULL,
     discounted BOOLEAN DEFAULT FALSE,
+    
     FOREIGN KEY (schedule_id) REFERENCES Schedule(schedule_id)
         ON UPDATE CASCADE
-        ON DELETE CASCADE
+        ON DELETE CASCADE  -- OK: Deleting schedule should delete tickets (refund)
 );
 
 -- =====================================================
--- 6.0 Table: Staff
+-- 7.0 Table: Role
 -- =====================================================
 CREATE TABLE Role (
     role_id INT PRIMARY KEY AUTO_INCREMENT,
-    role_name VARCHAR(50) -- ('Driver', 'Conductor', 'Mechanic', 'Manager')
+    role_name VARCHAR(50) UNIQUE NOT NULL  -- ADDED UNIQUE
 );
 
+-- =====================================================
+-- 8.0 Table: Staff
+-- =====================================================
 CREATE TABLE Staff (
     staff_id INT PRIMARY KEY AUTO_INCREMENT,
     staff_name VARCHAR(100) NOT NULL,
@@ -101,43 +113,58 @@ CREATE TABLE Staff (
     assigned_terminal INT,
     assigned_bus INT,
     shift ENUM('Morning', 'Evening'),
-    contact VARCHAR(50),
+    contact VARCHAR(50) UNIQUE,  -- ADDED UNIQUE per requirements
+    
     FOREIGN KEY (assigned_terminal) REFERENCES Terminal(terminal_id)
         ON UPDATE CASCADE
         ON DELETE SET NULL,
+        
     FOREIGN KEY (assigned_bus) REFERENCES Bus(bus_id)
         ON UPDATE CASCADE
         ON DELETE SET NULL,
-	FOREIGN KEY (role_id) REFERENCES Role(role_id)
+        
+    FOREIGN KEY (role_id) REFERENCES Role(role_id)
         ON UPDATE CASCADE
-        ON DELETE SET NULL
+        ON DELETE RESTRICT,  -- CHANGED: Can't delete role if staff using it
+    
+    -- BUG FIX #3: Added UNIQUE constraint
+    -- Prevents multiple staff with same role+shift on same bus
+    CONSTRAINT unique_bus_role_shift UNIQUE (assigned_bus, role_id, shift)
 );
 
 -- =====================================================
--- 8.0 Table: Maintenance
+-- 9.0 Table: Maintenance_Type
 -- =====================================================
-
 CREATE TABLE Maintenance_Type (
     maintenance_type_id INT PRIMARY KEY AUTO_INCREMENT,
     type_name VARCHAR(100) NOT NULL UNIQUE,
-    maintenance_cost DECIMAL(10,2) NOT NULL
+    maintenance_cost DECIMAL(10,2) NOT NULL,
+    CHECK (maintenance_cost >= 0)
 );
 
+-- =====================================================
+-- 10.0 Table: Maintenance
+-- =====================================================
 CREATE TABLE Maintenance (
     maintenance_id INT PRIMARY KEY AUTO_INCREMENT,
     bus_id INT NOT NULL,
     assigned_mechanic INT,
-	maintenance_type_id INT,
+    maintenance_type_id INT,
     starting_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     completion_time DATETIME,
+    
     FOREIGN KEY (bus_id) REFERENCES Bus(bus_id)
         ON UPDATE CASCADE
-        ON DELETE CASCADE,
-	FOREIGN KEY (maintenance_type_id) REFERENCES Maintenance_Type(maintenance_type_id)
+        ON DELETE CASCADE,  -- OK: If bus deleted, maintenance records deleted
+        
+    FOREIGN KEY (maintenance_type_id) REFERENCES Maintenance_Type(maintenance_type_id)
         ON UPDATE CASCADE
-        ON DELETE RESTRICT,
-	FOREIGN KEY (assigned_mechanic) REFERENCES Staff(staff_id)
+        ON DELETE RESTRICT,  -- Can't delete type if being used
+        
+    FOREIGN KEY (assigned_mechanic) REFERENCES Staff(staff_id)
         ON UPDATE CASCADE
-        ON DELETE CASCADE,
-	CHECK (completion_time IS NULL OR completion_time > starting_date)
+        ON DELETE SET NULL,  -- CHANGED: Maintenance record remains if mechanic leaves
+        
+    CHECK (completion_time IS NULL OR completion_time > starting_date)
 );
+
