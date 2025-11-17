@@ -159,6 +159,61 @@
                 </label><br><br>
 
                 <button type="submit" class="btn">Create Staff</button>
+                <a href="<%= request.getContextPath() %>/staff?action=reassign" class="btn" style="background:#27ae60;">Staff Reassignment</a>
+            </form>
+        </div>
+    <% } %>
+
+    <!-- Staff Reassignment Section -->
+    <% if(request.getAttribute("showReassignment") != null && (Boolean)request.getAttribute("showReassignment")) {
+        List<Map<String, Object>> unassignedStaff = (List<Map<String, Object>>) request.getAttribute("unassignedStaff");
+        List<Map<String, Object>> busesList = (List<Map<String, Object>>) request.getAttribute("buses");
+    %>
+        <div class="form-block" style="max-width: 1000px;">
+            <h2>Staff Reassignment (Drivers & Conductors)</h2>
+            
+            <form method="POST" action="<%= request.getContextPath() %>/staff">
+                <input type="hidden" name="action" value="processReassignment">
+                
+                <label>Select Staff to Reassign:<br>
+                    <select name="staffID" required style="width:100%;">
+                        <option value="">-- Select Staff --</option>
+                        <% if (unassignedStaff != null) {
+                            for (Map<String, Object> staff : unassignedStaff) { 
+                                String currentBus = (String) staff.get("current_bus");
+                        %>
+                                <option value="<%= staff.get("staff_id") %>">
+                                    <%= staff.get("staff_name") %> - <%= staff.get("role_name") %> (<%= staff.get("shift") %> Shift) - <%= currentBus %>
+                                </option>
+                        <%  }
+                        } %>
+                    </select>
+                </label><br><br>
+
+                <label>Assign to Bus:<br>
+                    <select name="busID" style="width:100%;">
+                        <option value="">-- Select Bus --</option>
+                        <% if (busesList != null) {
+                            for (Map<String, Object> bus : busesList) { 
+                                String assignedStaff = (String) bus.get("assigned_staff");
+                                String status = (String) bus.get("status");
+                                boolean isInTransit = "In Transit".equals(status);
+                        %>
+                                <option value="<%= bus.get("bus_id") %>" <%= isInTransit ? "disabled" : "" %>>
+                                    <%= bus.get("bus_number") %> - <%= status %>
+                                    <% if (assignedStaff != null && !assignedStaff.isEmpty()) { %>
+                                        - Staff: <%= assignedStaff.replace("|", ", ").replace(":", " ") %>
+                                    <% } else { %>
+                                        - No staff assigned
+                                    <% } %>
+                                </option>
+                        <%  }
+                        } %>
+                    </select>
+                </label><br><br>
+
+                <button type="submit" class="btn" style="background:#27ae60;">Reassign Staff</button>
+                <a href="<%= request.getContextPath() %>/staff?action=list" class="btn" style="background:#95a5a6;">Back to Staff List</a>
             </form>
         </div>
     <% } %>
