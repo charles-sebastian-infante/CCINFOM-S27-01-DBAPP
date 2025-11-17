@@ -24,14 +24,9 @@ public class MaintenanceController extends HttpServlet {
             showNewMaintenanceForm(request, response);
         else if ("view".equals(action))
             viewMaintenanceDetails(request, response);
-        else if ("complete".equals(action))
-            showCompleteMaintenanceForm(request, response);
-        else if ("types".equals(action))
-            listMaintenanceTypes(request, response);
-        else if ("newType".equals(action))
-            showNewMaintenanceTypeForm(request, response);
-        else if ("editType".equals(action))
-            showEditMaintenanceTypeForm(request, response);
+        else if ("edit".equals(action)){
+            showEditMaintenanceForm(request, response);
+        }
         else 
             listMaintenanceRecords(request, response);
     }
@@ -47,10 +42,10 @@ public class MaintenanceController extends HttpServlet {
             completeMaintenance(request, response);
         else if ("createType".equals(action))
             createMaintenanceType(request, response);
-        else if ("updateType".equals(action))
-            updateMaintenanceType(request, response);
-        else if ("deleteType".equals(action))
-            deleteMaintenanceType(request, response);
+        else if ("update".equals(action))
+            updateMaintenance(request, response);
+        else if ("delete".equals(action))
+            deleteMaintenance(request, response);
     }
     
     private void listMaintenanceRecords(HttpServletRequest request, 
@@ -145,7 +140,7 @@ public class MaintenanceController extends HttpServlet {
             request.setAttribute("maintenanceTypes", maintenanceTypes);
             request.setAttribute("mechanics", mechanics);
             
-            request.getRequestDispatcher("/admin/new_maintenance.jsp")
+            request.getRequestDispatcher("/admin/maintenance_list.jsp")
                 .forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -169,7 +164,7 @@ public class MaintenanceController extends HttpServlet {
             }
             
             request.setAttribute("maintenance", maintenanceDetails);
-            request.getRequestDispatcher("/admin/view_maintenance.jsp")
+            request.getRequestDispatcher("/admin/maintenance?action=list.jsp")
                 .forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -263,31 +258,40 @@ public class MaintenanceController extends HttpServlet {
         request.getRequestDispatcher("/admin/new_maintenance_type.jsp")
             .forward(request, response);
     }
-    
-    private void showEditMaintenanceTypeForm(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
+
+    private void showEditMaintenanceForm(HttpServletRequest request,
+                                         HttpServletResponse response) throws ServletException, IOException {
         try {
-            int typeID = Integer.parseInt(request.getParameter("id"));
-            
-            MaintenanceType type = new MaintenanceType();
-            type.maintenanceTypeID = typeID;
-            
-            if (type.getRecord() == 1) {
-                request.setAttribute("maintenanceType", type);
-                request.getRequestDispatcher("/admin/edit_maintenance_type.jsp")
-                    .forward(request, response);
+            int maintenanceID = Integer.parseInt(request.getParameter("id"));
+
+            Maintenance m = new Maintenance();
+            m.maintenanceID = maintenanceID;
+
+            if (m.getRecord() == 1) {
+                // Fetch dropdown data
+                List<Bus> buses = Bus.getAllBuses();
+                List<Staff> mechanics = Staff.getStaffByRole(4);
+                List<MaintenanceType> types = MaintenanceType.getAllMaintenanceTypes();
+
+                request.setAttribute("editMaintenance", m);
+                request.setAttribute("buses", buses);
+                request.setAttribute("mechanics", mechanics);
+                request.setAttribute("maintenanceTypes", types);
+
+                // Forward back to the list JSP
+                request.getRequestDispatcher("/admin/maintenance_list.jsp")
+                        .forward(request, response);
             } else {
-                request.setAttribute("error", "Maintenance type not found");
-                response.sendRedirect("maintenance?action=types");
+                request.setAttribute("error", "Maintenance record not found");
+                response.sendRedirect(request.getContextPath() + "/maintenance?action=list");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Error loading maintenance type form: " + e.getMessage());
-            response.sendRedirect("maintenance?action=types");
+            response.sendRedirect(request.getContextPath() + "/maintenance?action=list");
         }
     }
-    
-     private void createMaintenance(HttpServletRequest request, 
+
+    private void createMaintenance(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
         Connection conn = null;
         
@@ -477,53 +481,63 @@ public class MaintenanceController extends HttpServlet {
                 }
             }
         }
-    }  
-    private void completeMaintenance(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
+    }
+
+    private void completeMaintenance(HttpServletRequest request,
+                                     HttpServletResponse response) throws ServletException, IOException {
         try {
             int maintenanceID = Integer.parseInt(request.getParameter("maintenanceID"));
-            
-            // Check if a different mechanic was assigned
             String assignedMechanicParam = request.getParameter("assignedMechanic");
             int assignedMechanic = 0;
             if (assignedMechanicParam != null && !assignedMechanicParam.trim().isEmpty()) {
                 assignedMechanic = Integer.parseInt(assignedMechanicParam);
             }
-            
+
             Maintenance maintenance = new Maintenance();
             maintenance.maintenanceID = maintenanceID;
-            
-            if (maintenance.getRecord() == 1) {
+
+            // Load the record from DB
+            if (maintenance.getRecord() != 1) {
+                request.setAttribute("error", "Maintenance record not found");
+            } else {
+                // Check if already completed
                 if (maintenance.completionTime != null) {
                     request.setAttribute("error", "This maintenance record is already completed");
-                    response.sendRedirect("maintenance?action=view&id=" + maintenanceID);
-                    return;
-                }
-                
-                // Update mechanic if changed
-                if (assignedMechanic > 0 && assignedMechanic != maintenance.assignedMechanic) {
-                    maintenance.assignedMechanic = assignedMechanic;
-                }
-                
-                // Complete the maintenance
-                if(maintenance.completeMaintenance() == 1) {
-                    request.setAttribute("success", "Maintenance record completed successfully");
                 } else {
-                    request.setAttribute("error", "Failed to complete maintenance record");
+                    // Update mechanic if changed
+                    if (assignedMechanic > 0 && assignedMechanic != maintenance.assignedMechanic) {
+                        maintenance.assignedMechanic = assignedMechanic;
+                    }
+
+                    // Complete the maintenance
+                    if (maintenance.completeMaintenance() == 1) {
+                        request.setAttribute("success", "Maintenance record completed successfully");
+                    } else {
+                        request.setAttribute("error", "Failed to complete maintenance record");
+                    }
                 }
-                
-                response.sendRedirect("maintenance?action=view&id=" + maintenanceID);
-            } else {
-                request.setAttribute("error", "Maintenance record not found");
-                response.sendRedirect("maintenance?action=list");
             }
+
+            // Load all maintenance records for the table
+            List<Map<String, Object>> allRecords = Maintenance.getAllMaintenanceRecords();
+            request.setAttribute("maintenanceRecords", allRecords);
+
+            // Forward back to the JSP to render the updated list
+            request.getRequestDispatcher("/admin/maintenance_list.jsp").forward(request, response);
+
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Error completing maintenance record: " + e.getMessage());
-            response.sendRedirect("maintenance?action=list");
+            // Even on error, reload the list
+            List<Map<String, Object>> allRecords = Maintenance.getAllMaintenanceRecords();
+            request.setAttribute("maintenanceRecords", allRecords);
+            request.getRequestDispatcher("/admin/maintenance_list.jsp").forward(request, response);
         }
     }
-    
+
+
+
+
     private void createMaintenanceType(HttpServletRequest request, 
         HttpServletResponse response) throws ServletException, IOException {
         try {
@@ -562,83 +576,89 @@ public class MaintenanceController extends HttpServlet {
                 .forward(request, response);
         }
     }
-    
-    private void updateMaintenanceType(HttpServletRequest request, 
-        HttpServletResponse response) throws ServletException, IOException {
+
+    private void updateMaintenance(HttpServletRequest request,
+                                   HttpServletResponse response) throws ServletException, IOException {
         try {
-            // Validate input
-            Map<String, String> validationErrors = validateMaintenanceTypeInput(request);
-            
-            if (!validationErrors.isEmpty()) {
-                int typeID = Integer.parseInt(request.getParameter("typeID"));
-                
-                request.setAttribute("validationErrors", validationErrors);
-                request.setAttribute("maintenanceType", new MaintenanceType() {{
-                    maintenanceTypeID = typeID;
-                    typeName = request.getParameter("typeName");
-                    try {
-                        maintenanceCost = Double.parseDouble(request.getParameter("maintenanceCost"));
-                    } catch (NumberFormatException e) {
-                        maintenanceCost = 0.0;
-                    }
-                }});
-                
-                request.getRequestDispatcher("/admin/edit_maintenance_type.jsp")
-                    .forward(request, response);
+            Maintenance m = new Maintenance();
+            m.maintenanceID = Integer.parseInt(request.getParameter("maintenanceID"));
+            m.busID = Integer.parseInt(request.getParameter("busID"));
+            m.assignedMechanic = Integer.parseInt(request.getParameter("assignedMechanic"));
+            m.maintenanceTypeID = Integer.parseInt(request.getParameter("maintenanceTypeID"));
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+
+            // Starting date (required)
+            String startingDateStr = request.getParameter("startingDate");
+            if (startingDateStr == null || startingDateStr.isEmpty()) {
+                request.setAttribute("error", "Starting date is required.");
+                request.setAttribute("editMaintenance", m);
+                request.setAttribute("buses", Bus.getAllBuses());
+                request.setAttribute("mechanics", Staff.getStaffByRole(4));
+                request.setAttribute("maintenanceTypes", MaintenanceType.getAllMaintenanceTypes());
+                request.getRequestDispatcher("/admin/maintenance_list.jsp").forward(request, response);
                 return;
             }
-            
-            int typeID = Integer.parseInt(request.getParameter("typeID"));
-            String typeName = request.getParameter("typeName");
-            double maintenanceCost = Double.parseDouble(request.getParameter("maintenanceCost"));
-            
-            MaintenanceType type = new MaintenanceType();
-            type.maintenanceTypeID = typeID;
-            type.typeName = typeName;
-            type.maintenanceCost = maintenanceCost;
-            
-            if(type.modRecord() == 1) {
-                request.setAttribute("success", "Maintenance type updated successfully");
-                response.sendRedirect("maintenance?action=types");
-            } else {
-                request.setAttribute("error", "Failed to update maintenance type");
-                request.setAttribute("maintenanceType", type);
-                request.getRequestDispatcher("/admin/edit_maintenance_type.jsp")
-                    .forward(request, response);
+            m.startingDate = new Timestamp(sdf.parse(startingDateStr).getTime());
+
+            // Completion date (optional)
+            String completionTimeStr = request.getParameter("completionTime");
+            if (completionTimeStr != null && !completionTimeStr.isEmpty()) {
+                m.completionTime = new Timestamp(sdf.parse(completionTimeStr).getTime());
             }
+
+            // Mechanic assignment validation
+            if (m.assignedMechanic <= 0) {
+                request.setAttribute("error", "Please assign a mechanic.");
+                request.setAttribute("editMaintenance", m);
+                request.setAttribute("buses", Bus.getAllBuses());
+                request.setAttribute("mechanics", Staff.getStaffByRole(4));
+                request.setAttribute("maintenanceTypes", MaintenanceType.getAllMaintenanceTypes());
+                request.getRequestDispatcher("/admin/maintenance_list.jsp").forward(request, response);
+                return;
+            }
+
+            // Update record
+            if (m.modRecord() == 1) {
+                response.sendRedirect(request.getContextPath() + "/maintenance?action=list");
+            } else {
+                request.setAttribute("error", "Failed to update maintenance record.");
+                request.setAttribute("editMaintenance", m);
+                request.setAttribute("buses", Bus.getAllBuses());
+                request.setAttribute("mechanics", Staff.getStaffByRole(4));
+                request.setAttribute("maintenanceTypes", MaintenanceType.getAllMaintenanceTypes());
+                request.getRequestDispatcher("/admin/maintenance_list.jsp").forward(request, response);
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Error updating maintenance type: " + e.getMessage());
-            response.sendRedirect("maintenance?action=types");
+            request.setAttribute("error", "Error: " + e.getMessage());
+            request.setAttribute("editMaintenance", new Maintenance());
+            request.setAttribute("buses", Bus.getAllBuses());
+            request.setAttribute("mechanics", Staff.getStaffByRole(4));
+            request.setAttribute("maintenanceTypes", MaintenanceType.getAllMaintenanceTypes());
+            request.getRequestDispatcher("/admin/maintenance_list.jsp").forward(request, response);
         }
     }
-    
-    private void deleteMaintenanceType(HttpServletRequest request, 
+
+
+    private void deleteMaintenance(HttpServletRequest request,
         HttpServletResponse response) throws ServletException, IOException {
         try {
-            int typeID = Integer.parseInt(request.getParameter("id"));
+            Maintenance m = new Maintenance();
+            m.maintenanceID =  Integer.parseInt(request.getParameter("id"));
             
-            // Check if the type is in use
-            if (isMaintenanceTypeInUse(typeID)) {
-                request.setAttribute("error", "Cannot delete: This maintenance type is in use");
-                response.sendRedirect("maintenance?action=types");
-                return;
-            }
-            
-            MaintenanceType type = new MaintenanceType();
-            type.maintenanceTypeID = typeID;
-            
-            if(type.delRecord() == 1) {
+            if(m.delRecord() == 1) {
                 request.setAttribute("success", "Maintenance type deleted successfully");
+                response.sendRedirect("maintenance?action=list");
             } else {
                 request.setAttribute("error", "Failed to delete maintenance type");
             }
-            
-            response.sendRedirect("maintenance?action=types");
+
         } catch (Exception e) {
             e.printStackTrace();
-            request.setAttribute("error", "Error deleting maintenance type: " + e.getMessage());
-            response.sendRedirect("maintenance?action=types");
+            request.setAttribute("error", "Error deleting maintenance: " + e.getMessage());
+            response.sendRedirect("maintenance?action=list");
         }
     }
     
