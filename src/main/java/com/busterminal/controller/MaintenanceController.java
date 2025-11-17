@@ -499,42 +499,38 @@ public class MaintenanceController extends HttpServlet {
             // Load the record from DB
             if (maintenance.getRecord() != 1) {
                 request.setAttribute("error", "Maintenance record not found");
-            } else {
-                // Check if already completed
-                if (maintenance.completionTime != null) {
-                    request.setAttribute("error", "This maintenance record is already completed");
-                } else {
-                    // Update mechanic if changed
-                    if (assignedMechanic > 0 && assignedMechanic != maintenance.assignedMechanic) {
-                        maintenance.assignedMechanic = assignedMechanic;
-                    }
-
-                    // Complete the maintenance
-                    if (maintenance.completeMaintenance() == 1) {
-                        request.setAttribute("success", "Maintenance record completed successfully");
-                    } else {
-                        request.setAttribute("error", "Failed to complete maintenance record");
-                    }
-                }
+                request.getRequestDispatcher("/admin/maintenance_list.jsp").forward(request, response);
+                return;
             }
 
-            // Load all maintenance records for the table
-            List<Map<String, Object>> allRecords = Maintenance.getAllMaintenanceRecords();
-            request.setAttribute("maintenanceRecords", allRecords);
+            // Check if already completed
+            if (maintenance.completionTime != null) {
+                request.setAttribute("error", "This maintenance record is already completed");
+                request.getRequestDispatcher("/admin/maintenance_list.jsp").forward(request, response);
+                return;
+            }
 
-            // Forward back to the JSP to render the updated list
+            // Update mechanic if changed
+            if (assignedMechanic > 0 && assignedMechanic != maintenance.assignedMechanic) {
+                maintenance.assignedMechanic = assignedMechanic;
+            }
+
+            // Complete the maintenance
+            if (maintenance.completeMaintenance() == 1) {
+                request.setAttribute("success", "Maintenance record completed successfully");
+            } else {
+                request.setAttribute("error", "Failed to complete maintenance record");
+            }
+
+            // Forward back to the list page without reloading all maintenances
             request.getRequestDispatcher("/admin/maintenance_list.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Error completing maintenance record: " + e.getMessage());
-            // Even on error, reload the list
-            List<Map<String, Object>> allRecords = Maintenance.getAllMaintenanceRecords();
-            request.setAttribute("maintenanceRecords", allRecords);
             request.getRequestDispatcher("/admin/maintenance_list.jsp").forward(request, response);
         }
     }
-
 
 
 

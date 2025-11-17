@@ -2,6 +2,7 @@
 <%@ page import="java.util.List" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.HashMap" %>
+<%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="com.busterminal.model.Maintenance" %>
 <%@ page import="com.busterminal.model.Bus" %>
 <%@ page import="com.busterminal.model.Staff" %>
@@ -40,6 +41,82 @@ session.removeAttribute("error");
 %>
 <p style="color:red;"><%= error %></p>
 <% } %>
+
+<!-- Edit Form -->
+<%-- Edit Form --%>
+<%
+Maintenance edit = (Maintenance) request.getAttribute("editMaintenance");
+SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm");
+if (edit != null) {
+%>
+
+<div id="editForm" class="form-block">
+    <h2>Edit Maintenance Record</h2>
+    <form method="POST" action="<%= request.getContextPath() %>/maintenance">
+        <input type="hidden" name="action" value="update">
+        <input type="hidden" name="maintenanceID" value="<%= edit.maintenanceID %>">
+
+        <label>Bus:<br>
+            <select name="busID" required>
+                <option value="">-- Select Bus --</option>
+                <%
+                List<Bus> buses = (List<Bus>) request.getAttribute("buses");
+                if (buses != null) {
+                for (Bus bus : buses) { %>
+                <option value="<%= bus.busID %>" <%= (bus.busID == edit.busID) ? "selected" : "" %>>
+                <%= bus.busNumber %>
+                </option>
+                <%  }
+                } %>
+            </select>
+        </label><br><br>
+
+        <label>Mechanic:<br>
+            <select name="assignedMechanic" required>
+                <option value="">-- Select Mechanic --</option>
+                <%
+                List<Staff> mechanics = (List<Staff>) request.getAttribute("mechanics");
+                if (mechanics != null) {
+                for (Staff mech : mechanics) { %>
+                <option value="<%= mech.staffID %>" <%= (mech.staffID == edit.assignedMechanic) ? "selected" : "" %>>
+                <%= mech.staffName %>
+                </option>
+                <%  }
+                } %>
+            </select>
+        </label><br><br>
+
+        <label>Maintenance Type:<br>
+            <select name="maintenanceTypeID" required>
+                <option value="">-- Select Type --</option>
+                <%
+                List<MaintenanceType> types = (List<MaintenanceType>) request.getAttribute("maintenanceTypes");
+                if (types != null) {
+                for (MaintenanceType type : types) { %>
+                <option value="<%= type.maintenanceTypeID %>" <%= (type.maintenanceTypeID == edit.maintenanceTypeID) ? "selected" : "" %>>
+                <%= type.typeName %>
+                </option>
+                <%  }
+                } %>
+            </select>
+        </label><br><br>
+
+        <label>Starting Date:<br>
+            <input type="datetime-local" name="startingDate"
+                   value="<%= (edit.startingDate != null) ? sdf.format(edit.startingDate) : "" %>" required>
+        </label><br><br>
+
+        <label>Completion Time:<br>
+            <input type="datetime-local" name="completionTime"
+                   value="<%= (edit.completionTime != null) ? sdf.format(edit.completionTime) : "" %>">
+            <small>Leave blank if maintenance is ongoing</small>
+        </label><br><br>
+
+        <button type="submit" class="btn">Update Maintenance Record</button>
+        <a href="<%= request.getContextPath() %>/maintenance?action=list">Cancel</a>
+    </form>
+</div>
+<% } else { %>
 
 <!-- Create form (default) -->
 <div class="form-block">
@@ -115,6 +192,9 @@ session.removeAttribute("error");
                 <a href="<%= request.getContextPath() %>/maintenance?action=list">View All Records</a>
             </form>
 </div>
+<% } %>
+
+
 
 <!-- Maintenance Records List -->
 <%
@@ -185,6 +265,8 @@ if(maintenanceRecords.size() == 0) {
                 <button type="submit" class="btn btn-edit">Complete</button>
             </form>
             <% } %>
+
+            <a href="<%= request.getContextPath() %>/maintenance?action=edit&id=<%= maintenanceID %>" class="btn btn-edit">Edit</a>
 
             <form method="POST"
                   action="<%= request.getContextPath() %>/maintenance"
