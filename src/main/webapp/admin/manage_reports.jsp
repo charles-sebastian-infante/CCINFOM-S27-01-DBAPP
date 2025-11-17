@@ -366,6 +366,8 @@
         </div>
     <% } %>
 
+    <a href="<%= request.getContextPath() %>/" class="fixed-button">Back to Home</a>
+
 </body>
 
 </html>
