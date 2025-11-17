@@ -128,7 +128,6 @@
                 <label>Status:<br>
                     <select name="status" required>
                         <option value="Available">Available</option>
-                        <option value="In Transit">In Transit</option>
                         <option value="Maintenance">Maintenance</option>
                     </select>
                 </label><br><br>
@@ -177,6 +176,7 @@
             <% for(Map<String, Object> busDetail : busesWithDetails) { 
                 Bus bus = (Bus) busDetail.get("bus");
                 String terminalName = (String) busDetail.get("terminalName");
+                boolean isInTransit = "In Transit".equals(bus.status);
             %>
                 <tr>
                     <td><%= bus.busID %></td>
@@ -185,13 +185,17 @@
                     <td><%= bus.status %></td>
                     <td><%= terminalName != null ? terminalName : "N/A" %></td>
                     <td>
-                        <a class="btn btn-edit" href="<%= request.getContextPath() %>/bus?action=edit&id=<%= bus.busID %>">Edit</a>
-                        
-                        <form method="POST" action="<%= request.getContextPath() %>/bus" style="display:inline;" onsubmit="return confirm('Delete bus ID <%= bus.busID %>?') ? true : false;">
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="id" value="<%= bus.busID %>">
-                            <button type="submit" class="btn btn-delete">Delete</button>
-                        </form>
+                        <% if (!isInTransit) { %>
+                            <a class="btn btn-edit" href="<%= request.getContextPath() %>/bus?action=edit&id=<%= bus.busID %>">Edit</a>
+                            
+                            <form method="POST" action="<%= request.getContextPath() %>/bus" style="display:inline;" onsubmit="return confirm('Delete bus ID <%= bus.busID %>?') ? true : false;">
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="id" value="<%= bus.busID %>">
+                                <button type="submit" class="btn btn-delete">Delete</button>
+                            </form>
+                        <% } else { %>
+                            <span style="color:#999;">In Transit</span>
+                        <% } %>
                     </td>
                 </tr>
             <% } %>
