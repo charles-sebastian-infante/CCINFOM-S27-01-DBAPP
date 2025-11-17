@@ -219,7 +219,7 @@
                     <tr>
                         <th>Date</th>
                         <th>Maintenance Count</th>
-                        <th>Daily Cost</th>
+                        <th>Total Cost</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -367,4 +367,5 @@
     <% } %>
 
 </body>
+
 </html>
