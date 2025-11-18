@@ -9,12 +9,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Manage Schedules</title>
-
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/style/manage_schedules.css">
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/style/global.css">
 </head>
 <body>
     <h1>Manage Schedules</h1>
-    <link rel="stylesheet" href="style/manage_schedules.css">
-    <link rel="stylesheet" href="style/global.css">
     <% if(request.getAttribute("success") != null) { %>
         <p style="color:green;"><%= request.getAttribute("success") %></p>
     <% } %>
@@ -95,10 +94,10 @@
             </label><br><br>
 
             <label>Arrival Date: <span style="color:#666;">(Auto)</span><br>
-                <input type="date" name="arrivalDate" id="arrivalDate" required readonly style="background:#f0f0f0;">
+                <input type="date" name="arrivalDate" id="arrivalDate" required style="background:#f0f0f0;">
             </label>
             <label>Arrival Time: <span style="color:#666;">(Auto)</span><br>
-                <input type="time" name="arrivalTime" id="arrivalTime" required readonly style="background:#f0f0f0;">
+                <input type="time" name="arrivalTime" id="arrivalTime" required style="background:#f0f0f0;">
             </label><br><br>
 
             <button type="submit" class="btn" style="background:#2ecc71;color:#fff;">Create Schedule</button>
@@ -126,29 +125,45 @@
                 
                 // Parse travel time (format: HH:mm:ss)
                 const travelTimeParts = travelTimeStr.split(':');
-                const travelHours = parseInt(travelTimeParts[0]);
-                const travelMinutes = parseInt(travelTimeParts[1]);
+                const travelHours = parseInt(travelTimeParts[0]) || 0;
+                const travelMinutes = parseInt(travelTimeParts[1]) || 0;
+                const travelSeconds = parseInt(travelTimeParts[2]) || 0;
                 
-                // Parse departure datetime
-                const departureDateTime = new Date(departureDate + 'T' + departureTime);
+                // Create departure datetime (using local timezone)
+                const departureDateTime = new Date(departureDate + 'T' + departureTime + ':00');
                 
                 // Add travel time
                 departureDateTime.setHours(departureDateTime.getHours() + travelHours);
                 departureDateTime.setMinutes(departureDateTime.getMinutes() + travelMinutes);
+                departureDateTime.setSeconds(departureDateTime.getSeconds() + travelSeconds);
                 
-                // Format arrival date and time
-                const arrivalDate = departureDateTime.toISOString().split('T')[0];
-                const arrivalTime = departureDateTime.toTimeString().split(' ')[0].substring(0, 5);
+                // Format arrival date and time (24-hour format)
+                const arrivalYear = departureDateTime.getFullYear();
+                const arrivalMonth = String(departureDateTime.getMonth() + 1).padStart(2, '0');
+                const arrivalDay = String(departureDateTime.getDate()).padStart(2, '0');
+                const arrivalHours = String(departureDateTime.getHours()).padStart(2, '0');
+                const arrivalMinutes = String(departureDateTime.getMinutes()).padStart(2, '0');
+                
+                const arrivalDate = arrivalYear + '-' + arrivalMonth + '-' + arrivalDay;
+                const arrivalTime = arrivalHours + ':' + arrivalMinutes;
                 
                 // Set arrival fields
                 document.getElementById('arrivalDate').value = arrivalDate;
                 document.getElementById('arrivalTime').value = arrivalTime;
             }
             
-            // Add event listeners
-            document.getElementById('routeSelect').addEventListener('change', calculateArrival);
-            document.getElementById('departureDate').addEventListener('change', calculateArrival);
-            document.getElementById('departureTime').addEventListener('change', calculateArrival);
+            // Attach event listeners immediately (script is after form elements)
+            (function() {
+                var routeSelect = document.getElementById('routeSelect');
+                var departureDate = document.getElementById('departureDate');
+                var departureTime = document.getElementById('departureTime');
+                
+                if (routeSelect && departureDate && departureTime) {
+                    routeSelect.addEventListener('change', calculateArrival);
+                    departureDate.addEventListener('change', calculateArrival);
+                    departureTime.addEventListener('change', calculateArrival);
+                }
+            })();
         </script>
     </div>
 
