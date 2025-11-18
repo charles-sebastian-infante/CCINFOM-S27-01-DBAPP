@@ -62,11 +62,14 @@ if (edit != null) {
                 <%
                 List<Bus> buses = (List<Bus>) request.getAttribute("buses");
                 if (buses != null) {
-                for (Bus bus : buses) { %>
+                for (Bus bus : buses) { 
+                    if (!"In Transit".equals(bus.status)) {
+                %>
                 <option value="<%= bus.busID %>" <%= (bus.busID == edit.busID) ? "selected" : "" %>>
-                <%= bus.busNumber %>
+                <%= bus.busNumber %> - <%= bus.status %>
                 </option>
                 <%  }
+                    }
                 } %>
             </select>
         </label><br><br>
@@ -144,18 +147,21 @@ if (edit != null) {
                     <select name="busID" required>
                         <option value="">-- Select Bus --</option>
                         <% if (busesForCreate != null) {
-                        for (Bus bus : busesForCreate) { %>
+                        for (Bus bus : busesForCreate) { 
+                            if (!"In Transit".equals(bus.status)) {
+                        %>
                         <option value="<%= bus.busID %>">
-                            <%= bus.busNumber %>
+                            <%= bus.busNumber %> - <%= bus.status %>
                         </option>
                         <%  }
+                            }
                         } %>
                     </select>
                 </label><br><br>
 
                 <label>Mechanic:<br>
-                    <select name="assignedMechanic" required>
-                        <option value="">-- Select Mechanic --</option>
+                    <select name="mechanicID">
+                        <option value="">-- Optional --</option>
                         <% if (mechanicsForCreate != null) {
                         for (Staff mechanic : mechanicsForCreate) { %>
                         <option value="<%= mechanic.staffID %>">
@@ -180,12 +186,11 @@ if (edit != null) {
                 </label><br><br>
 
                 <label>Starting Date:<br>
-                    <input type="datetime-local" name="startingDate" required>
+                    <input type="date" name="startingDate" required>
                 </label><br><br>
 
-                <label>Completion Time (optional):<br>
-                    <input type="datetime-local" name="completionTime">
-                    <small>Leave blank if maintenance is ongoing</small>
+                <label>Starting Time:<br>
+                    <input type="time" name="startingTime" required>
                 </label><br><br>
 
                 <button type="submit" class="btn">Create Maintenance Record</button>
@@ -218,8 +223,6 @@ if(maintenanceRecords.size() == 0) {
         <th>Starting Date</th>
         <th>Completion Time</th>
         <th>Cost</th>
-        <th>Duration</th>
-        <th>Status</th>
         <th>Actions</th>
     </tr>
     </thead>
@@ -253,8 +256,6 @@ if(maintenanceRecords.size() == 0) {
         <td><%= startingDate != null ? startingDate.toString() : "N/A" %></td>
         <td><%= completionTime != null ? completionTime.toString() : "Ongoing" %></td>
         <td><%= maintenanceCost != null ? "₱" + String.format("%.2f", maintenanceCost) : "N/A" %></td>
-        <td><%= durationHours != null ? String.format("%.1f hrs", durationHours) : "-" %></td>
-        <td class="<%= statusClass %>"><%= status %></td>
         <td>
             <% if (!isCompleted) { %>
             <form method="POST"
@@ -271,7 +272,7 @@ if(maintenanceRecords.size() == 0) {
             <form method="POST"
                   action="<%= request.getContextPath() %>/maintenance"
                   style="display:inline;"
-                  onsubmit="return confirmDelete(<%= maintenanceID %>);">
+                  onsubmit="return confirmDelete('<%= maintenanceID %>');">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="id" value="<%= maintenanceID %>">
                 <button type="submit" class="btn btn-delete">Delete</button>
