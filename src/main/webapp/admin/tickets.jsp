@@ -84,10 +84,6 @@
     <form method="POST" action="<%= request.getContextPath() %>/ticket">
         <input type="hidden" name="action" value="create">
 
-        <label>Ticket Number:<br>
-            <input type="text" name="ticketNumber" value="<%= request.getAttribute("ticketNumber") %>" readonly>
-        </label><br><br>
-
         <label>Schedule:<br>
             <select name="scheduleID" required>
                 <option value="">-- Select Schedule --</option>
@@ -156,11 +152,10 @@ if(list.size() == 0) {
         <td>
             <a class="btn btn-edit" href="<%= request.getContextPath() %>/ticket?action=edit&id=<%= t.get("ticket_id") %>">Edit</a>
 
-            <form method="POST" action="<%= request.getContextPath() %>/ticket" style="display:inline;" onsubmit="return confirmDelete(this);">
+            <form method="POST" action="<%= request.getContextPath() %>/ticket" style="display:inline;" onsubmit="return confirmDelete();">
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="id" value="<%= t.get("ticket_id") %>">
                 <button type="submit" class="btn btn-delete">Delete</button>
-            </form>
             </form>
         </td>
     </tr>
