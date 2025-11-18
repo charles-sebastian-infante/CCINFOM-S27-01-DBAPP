@@ -1,285 +1,176 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="com.busterminal.model.Ticket" %>
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Tickets</title>
-    <link rel="stylesheet" href="../assets/css/admin.css">
-    <style>
-        table { border-collapse: collapse; width: 100%; }
-        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background: #f4f4f4; }
-        .form-block { margin: 20px 0; padding: 12px; border: 1px solid #ddd; background:#fafafa; }
-        .btn { padding:6px 10px; margin-right:6px; cursor: pointer; }
-        .btn-book { background:#27ae60; color:#fff; border:none; }
-        .btn-cancel { background:#95a5a6; color:#fff; border:none; }
-        .btn-delete { background:#e74c3c; color:#fff; border:none; }
-        .available { color: #27ae60; font-weight: bold; }
-        .limited { color: #f39c12; font-weight: bold; }
-        .full { color: #e74c3c; font-weight: bold; }
-        .status-scheduled { color: #27ae60; }
-        .status-departed { color: #3498db; }
-        .status-completed { color: #95a5a6; }
-        .status-cancelled { color: #e74c3c; }
-    </style>
+    <title>Manage Tickets</title>
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/style/tickets.css">
+    <link rel="stylesheet" href="<%= request.getContextPath() %>/style/global.css">
+
     <script>
-        var currentPrice = 0;
-        var currentCapacity = 0;
-
-        function showBookingForm(scheduleID, busNumber, route, departureTime, arrivalTime, availableSeats, price) {
-            if (availableSeats === 0) {
-                alert('This bus is fully booked! Please choose another bus.');
-                return;
-            }
-
-            currentPrice = price;
-            currentCapacity = availableSeats;
-
-            document.getElementById('bookingForm').style.display = 'block';
-            document.getElementById('scheduleID').value = scheduleID;
-            document.getElementById('busDetailsDisplay').innerHTML =
-                '<strong>Bus:</strong> ' + busNumber + '<br>' +
-                '<strong>Route:</strong> ' + route + '<br>' +
-                '<strong>Departure:</strong> ' + departureTime + '<br>' +
-                '<strong>Arrival:</strong> ' + arrivalTime + '<br>' +
-                '<strong>Available Seats:</strong> ' + availableSeats + '<br>' +
-                '<strong>Price per Ticket:</strong> ₱' + price.toFixed(2);
-
-            document.getElementById('ticketQuantity').max = availableSeats;
-            document.getElementById('maxSeats').textContent = availableSeats;
-            document.getElementById('ticketQuantity').value = 1;
-            calculateTotal();
-        }
-
-
-        function validateBooking(form) {
-            var quantity = parseInt(form.ticketQuantity.value);
-
-            if (quantity < 1) {
-                alert('You must purchase at least 1 ticket.');
-                return false;
-            }
-
-            if (quantity > currentCapacity) {
-                alert('Cannot book ' + quantity + ' tickets. Only ' + currentCapacity + ' seats are available.');
-                return false;
-            }
-
-            if (confirm('Book ' + quantity + ' ticket(s)?')) {
-                return true;
+        function confirmDelete(form) {
+            if (confirm('Are you sure you want to delete this ticket?')) {
+                form.submit();
             }
             return false;
         }
     </script>
 </head>
-
 <body>
-<h1>Trip TimeTable & Ticket Booking</h1>
+<h1>Manage Tickets</h1>
 
-<% if(request.getAttribute("message") != null) { %>
-<p style="color:green;"><%= request.getAttribute("message") %></p>
-<% } %>
+    <% if(request.getAttribute("message") != null) { %>
+    <p style="color:green;"><%= request.getAttribute("message") %></p>
+    <% } %>
 
-<% if(request.getAttribute("error") != null) { %>
-<p style="color:red;"><%= request.getAttribute("error") %></p>
-<% } %>
+    <% if(request.getAttribute("error") != null) { %>
+    <p style="color:red;"><%= request.getAttribute("error") %></p>
+    <% } %>
 
-<!-- Available Schedules Table -->
-<%
-    if(request.getAttribute("schedules") != null) {
-        java.util.List<com.busterminal.model.Schedule> scheduleList =
-                (java.util.List<com.busterminal.model.Schedule>) request.getAttribute("schedules");
-
-        if(scheduleList.size() == 0) {
+    <% if(request.getAttribute("editTicket") != null) {
+    Map<String, Object> ticket = (Map<String, Object>) request.getAttribute("editTicket");
+    List<Map<String, Object>> schedules = (List<Map<String, Object>>) request.getAttribute("scheduleList");
 %>
-<p>There are no buses available today.</p>
-<%
-} else {
-%>
-<h2>Today's TimeTable</h2>
-<table>
-    <thead>
-    <tr>
-        <th>Bus Number</th>
-        <th>Route</th>
-        <th>Departure Time</th>
-        <th>Arrival Time</th>
-        <th>Capacity</th>
-        <th>Available Seats</th>
-        <th>Price</th>
-        <th>Status</th>
-        <th>Action</th>
-    </tr>
-    </thead>
-    <tbody>
+    <div class="form-block">
+        <h2>Edit Ticket #<%= ticket.get("ticket_number") %></h2>
+        <form method="POST" action="<%= request.getContextPath() %>/ticket">
+            <input type="hidden" name="action" value="update">
+            <input type="hidden" name="id" value="<%= ticket.get("ticket_id") %>">
+
+            <label>Ticket Number:<br>
+                <input type="text" name="ticketNumber" value="<%= ticket.get("ticket_number") %>" required>
+            </label><br><br>
+
+            <label>Schedule:<br>
+                <select name="scheduleID" required>
+                    <option value="">-- Select Schedule --</option>
+                    <% if (schedules != null) {
+                    for (Map<String, Object> s : schedules) {
+                    int availableSeats = (Integer) s.get("available_seats");
+                    boolean isFull = availableSeats <= 0 && !s.get("schedule_id").equals(ticket.get("schedule_id"));
+                    boolean isSelected = s.get("schedule_id").equals(ticket.get("schedule_id"));
+                    %>
+                    <option value="<%= s.get("schedule_id") %>"
+                    <%= isSelected ? "selected" : (isFull ? "disabled" : "") %>>
+                    Schedule #<%= s.get("schedule_id") %> - Bus <%= s.get("bus_number") %> - Route <%= s.get("route_name") %> - <%= s.get("departure_time") %>
+                    (<%= isFull ? "Full" : availableSeats + " seats available" %>)
+                    </option>
+                    <%  }
+                    } %>
+                </select>
+            </label><br><br>
+
+            <label>Discounted:<br>
+                <select name="discounted">
+                    <option value="false" <%= !(Boolean) ticket.get("discounted") ? "selected" : "" %>>No</option>
+                    <option value="true" <%= (Boolean) ticket.get("discounted") ? "selected" : "" %>>Yes</option>
+                </select>
+            </label><br><br>
+
+            <button type="submit" class="btn btn-edit">Update Ticket</button>
+            <a href="<%= request.getContextPath() %>/ticket?action=list">View Tickets</a>
+        </form>
+    </div>
+<% } else { %>
+<!-- Create form (default) -->
+<div class="form-block">
+    <h2>Create New Ticket</h2>
     <%
-        for(com.busterminal.model.Schedule schedule : scheduleList) {
-            // Retrieve bus and route from schedule
-            com.busterminal.model.Bus bus = schedule.busID;
-            com.busterminal.model.Route route = schedule.routeID;
-
-            // Get the count for booked tickets for this schedule
-            int bookedSeats = 0;
-            if(request.getAttribute("bookingCounts") != null) {
-                java.util.Map<Integer, Integer> bookingCounts =
-                        (java.util.Map<Integer, Integer>) request.getAttribute("bookingCounts");
-                bookedSeats = bookingCounts.getOrDefault(schedule.scheduleID, 0);
-            }
-
-            int availableSeats = bus.capacity - bookedSeats;
-            String availabilityClass = availableSeats == 0 ? "full" :
-                    availableSeats <= 5 ? "limited" : "available";
-            String availabilityText = availableSeats == 0 ? "FULL" :
-                    availableSeats + " seats";
-            String statusClass = "status-" + schedule.status.toLowerCase().replace(" ", "-");
+    List<Map<String, Object>> schedulesForCreate = (List<Map<String, Object>>) request.getAttribute("scheduleList");
     %>
-    <tr>
-        <td><%= schedule.busID %></td>
-        <td><%= route.routeName %></td>
-        <td><%= schedule.departureTime %></td>
-        <td><%= schedule.arrivalTime %></td>
-        <td><%= bus.capacity %></td>
-        <td class="<%= availabilityClass %>"><%= availabilityText %></td>
-        <td>₱<%= String.format("%.2f", route.baseFare) %></td>
-        <td class="<%= statusClass %>"><%= schedule.status %></td>
-        <td>
-            <% if(availableSeats > 0 && "Scheduled".equals(schedule.status)) { %>
-            <button class="btn btn-book"
-                    onclick="showBookingForm(<%= schedule.scheduleID %>,
-                            '<%= schedule.busID %>',
-                            '<%= route.routeName %>',
-                            '<%= schedule.departureTime %>',
-                            '<%= schedule.arrivalTime %>',
-                        <%= availableSeats %>,
-                        <%= route.baseFare %>)">
-                Book Ticket
-            </button>
-            <% } else if(availableSeats == 0) { %>
-            <span class="full">FULLY BOOKED</span>
-            <% } else { %>
-            <span>Not Available</span>
-            <% } %>
-        </td>
-    </tr>
-    <%
-        }
-    %>
-    </tbody>
-</table>
-<%
-        }
-    }
-%>
+    <form method="POST" action="<%= request.getContextPath() %>/ticket">
+        <input type="hidden" name="action" value="create">
 
-<!-- Booking Form (Hidden by default) -->
-<div id="bookingForm" class="form-block" style="display:none;">
-    <h2>Book Tickets</h2>
-    <div id="busDetailsDisplay" style="margin-bottom: 15px; line-height: 1.8;"></div>
-
-    <form method="POST" action="<%= request.getContextPath() %>/ticket" onsubmit="return validateBooking(this)">
-        <input type="hidden" name="action" value="book">
-        <input type="hidden" name="scheduleID" id="scheduleID">
-
-        <label>Number of Tickets:<br>
-            <input type="number"
-                   name="ticketQuantity"
-                   id="ticketQuantity"
-                   min="1"
-                   value="1"
-                   required
-                   style="width: 100px;"
-                   onchange="calculateTotal()"
-                   oninput="calculateTotal()">
-            <span style="color:#666; margin-left:10px;">(Max: <span id="maxSeats"></span> seats)</span>
+        <label>Ticket Number:<br>
+            <input type="text" name="ticketNumber" value="<%= request.getAttribute("ticketNumber") %>" readonly>
         </label><br><br>
 
-        <label>
-            <input type="checkbox" name="discounted" id="discounted" value="1" onchange="calculateTotal()">
-            Discounted Ticket (20% off)
+        <label>Schedule:<br>
+            <select name="scheduleID" required>
+                <option value="">-- Select Schedule --</option>
+                <% if (schedulesForCreate != null) {
+                for (Map<String, Object> s : schedulesForCreate) {
+                int availableSeats = (Integer) s.get("available_seats");
+                boolean isFull = availableSeats <= 0;
+                %>
+                <option value="<%= s.get("schedule_id") %>" <%= isFull ? "disabled" : "" %>>
+                Schedule #<%= s.get("schedule_id") %> - Bus <%= s.get("bus_number") %> - Route <%= s.get("route_name") %> - <%= s.get("departure_time") %>
+                (<%= isFull ? "Full" : availableSeats + " seats available" %>)
+                </option>
+                <%  }
+                } %>
+            </select>
         </label><br><br>
 
-        <div style="font-size: 16px; margin: 15px 0; padding: 10px; background: #f0f0f0; border-radius: 5px;">
-            <div><strong>Price per Ticket:</strong> <span id="pricePerTicket">₱0.00</span>
-            </div>
-            <div style="margin-top: 8px; font-size: 18px;">
-                <strong>Total Price:</strong> <span id="totalPrice" style="color: #27ae60;">₱0.00</span>
-            </div>
-        </div>
+        <label>Discounted:<br>
+            <select name="discounted">
+                <option value="false" selected>No</option>
+                <option value="true">Yes</option>
+            </select>
+        </label><br><br>
 
-        <button type="submit" class="btn btn-book">Confirm Booking</button>
-        <button type="button" class="btn btn-cancel" onclick="cancelBooking()">Cancel</button>
+        <button type="submit" class="btn">Create Ticket</button>
+        <a href="<%= request.getContextPath() %>/ticket?action=list">View Ticket List</a>
     </form>
 </div>
+<% } %>
 
-<!-- Booked Tickets Section -->
-<%
-    if(request.getAttribute("tickets") != null) {
-        java.util.List<com.busterminal.model.Ticket> ticketList =
-                (java.util.List<com.busterminal.model.Ticket>) request.getAttribute("tickets");
-
-        // Get schedules map to lookup schedule details
-        java.util.Map<Integer, com.busterminal.model.Schedule> schedulesMap = null;
-        if(request.getAttribute("schedulesMap") != null) {
-            schedulesMap = (java.util.Map<Integer, com.busterminal.model.Schedule>) request.getAttribute("schedulesMap");
-        }
-
-        if(ticketList.size() > 0) {
+<!-- Tickets list -->
+<% if(request.getAttribute("tickets") != null) {
+List<Map<String, Object>> list = (List<Map<String, Object>>) request.getAttribute("tickets");
+if(list.size() == 0) {
 %>
-<h2>My Booked Tickets</h2>
+<p>No tickets found.</p>
+<%  } else { %>
+<h2>All Tickets</h2>
 <table>
     <thead>
     <tr>
+        <th>ID</th>
         <th>Ticket Number</th>
+        <th>Schedule ID</th>
+        <th>Departure Time</th>
+        <th>Schedule Status</th>
         <th>Bus Number</th>
-        <th>Route</th>
-        <th>Departure</th>
+        <th>Route Name</th>
         <th>Discounted</th>
-        <th>Status</th>
+        <th>Fare</th>
         <th>Actions</th>
     </tr>
     </thead>
     <tbody>
-    <%
-        for(com.busterminal.model.Ticket ticket : ticketList) {
-            // Retrieve schedule, bus and route from schedulesMap using ticket.scheduleID
-            com.busterminal.model.Schedule schedule = schedulesMap != null ? schedulesMap.get(ticket.scheduleID) : null;
-            com.busterminal.model.Bus bus = schedule != null ? schedule.busID : null;
-            com.busterminal.model.Route route = schedule != null ? schedule.routeID : null;
-            String scheduleStatus = schedule != null ? schedule.status : "Unknown";
-    %>
+    <% for(Map<String, Object> t : list) { %>
     <tr>
-        <td><%= ticket.ticketNumber %></td>
-        <td><%= bus != null ? bus.busNumber : "N/A" %></td>
-        <td><%= route != null ? route.routeName : "N/A" %></td>
-        <td><%= schedule != null ? schedule.departureTime : "N/A" %></td>
-        <td><%= ticket.discounted ? "Yes (20% off)" : "No" %></td>
-        <td class="status-<%= scheduleStatus.toLowerCase().replace(" ", "-") %>">
-            <%= scheduleStatus %>
-        </td>
+        <td><%= t.get("ticket_id") %></td>
+        <td><%= t.get("ticket_number") %></td>
+        <td><%= t.get("schedule_id") %></td>
+        <td><%= t.get("departure_time") %></td>
+        <td><%= t.get("schedule_status") %></td>
+        <td><%= t.get("bus_number") %></td>
+        <td><%= t.get("route_name") %></td>
+        <td><%= (Boolean) t.get("discounted") ? "Yes" : "No" %></td>
+        <td><%= t.get("fare") %></td>
         <td>
-            <% if("Scheduled".equals(scheduleStatus)) { %>
-            <form method="POST"
-                  action="<%= request.getContextPath() %>/ticket"
-                  style="display:inline;"
-                  onsubmit="return confirmDeleteTicket('<%= ticket.ticketNumber %>')">
-                <input type="hidden" name="action" value="cancel">
-                <input type="hidden" name="ticketID" value="<%= ticket.ticketID %>">
-                <button type="submit" class="btn btn-delete">Cancel</button>
+            <a class="btn btn-edit" href="<%= request.getContextPath() %>/ticket?action=edit&id=<%= t.get("ticket_id") %>">Edit</a>
+
+            <form method="POST" action="<%= request.getContextPath() %>/ticket" style="display:inline;" onsubmit="return confirmDelete(this);">
+                <input type="hidden" name="action" value="delete">
+                <input type="hidden" name="id" value="<%= t.get("ticket_id") %>">
+                <button type="submit" class="btn btn-delete">Delete</button>
             </form>
-            <% } else { %>
-            <span style="color:#999;">Cannot cancel</span>
-            <% } %>
+            </form>
         </td>
     </tr>
-    <%
-        }
-    %>
+    <% } %>
     </tbody>
 </table>
-<%
-        }
-    }
-%>
+<%  }
+} %>
+
+<a href="<%= request.getContextPath() %>/" class="fixed-button">Back to Home</a>
 
 </body>
 </html>

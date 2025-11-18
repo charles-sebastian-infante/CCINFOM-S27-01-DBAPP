@@ -1,0 +1,163 @@
+@import url("https://fonts.googleapis.com/css?family=Montserrat:700");
+@import url("https://fonts.googleapis.com/css?family=Roboto:400,500");
+
+/* --- Form Block --- */
+.form-block {
+    margin: 30px auto;
+    padding: 30px;
+    background: white;
+    max-width: 700px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow:visible;
+}
+
+.form-block h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-family: "Montserrat", sans-serif;
+    color: black;
+}
+
+/* Force labels to stack and inputs to stretch */
+.form-block label {
+    display: block;
+    font-weight: 500;
+    color: black;
+    margin-bottom: 10px;
+    font-family: "Roboto", sans-serif;
+}
+
+.form-block input[type="text"],
+.form-block select {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    font-family: "Roboto", sans-serif;
+    margin-bottom: 20px;
+    transition: border-color 0.3s ease;
+}
+
+.form-block input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+}
+
+.form-block input:focus,
+.form-block select:focus {
+    outline: none;
+    border-color: #304674;
+}
+
+.form-block button[type="submit"] {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    background-color: #27ae60;
+    color: #fff;
+    transition: all 0.3s ease;
+    margin-right: 10px;
+}
+
+.form-block button:hover {
+    background-color: #229954;
+}
+
+.form-block a {
+    color: #304674;
+    font-weight: 500;
+    text-decoration: none;
+    margin-left: 10px;
+}
+
+.form-block a:hover {
+    color: #1e2f52;
+}
+
+/* --- Global Button Styles --- */
+.btn {
+    padding: 10px 20px;
+    cursor: pointer;
+    border: none;
+    border-radius: 6px;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin-right: 6px;
+}
+
+.btn-edit {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn-edit:hover {
+    background-color: #2980b9;
+}
+
+.btn-delete {
+    background-color: #e74c3c;
+    color: white;
+}
+
+.btn-delete:hover {
+    background-color: #c0392b;
+}
+
+/* --- Table Styles --- */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 1200px;
+    margin: 30px auto;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: center;
+    font-family: "Roboto", sans-serif;
+    font-size: 14px;
+}
+
+th {
+    background: #304674;
+    color: white;
+    font-family: "Montserrat", sans-serif;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: 1px;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+tbody tr:hover {
+    background-color: #f3f3f3;
+}
+
+/* Action forms in table */
+td form {
+    display: inline;
+    margin: 0;
+}

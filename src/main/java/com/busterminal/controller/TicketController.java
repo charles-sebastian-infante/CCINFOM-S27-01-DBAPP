@@ -25,6 +25,8 @@ public class TicketController extends HttpServlet {
             viewTicketDetails(request, response);
         else if ("bySchedule".equals(action))
             listTicketsBySchedule(request, response);
+        else if ("edit".equals(action))
+            showEditForm(request, response);
         else 
             listTickets(request, response);
     }
@@ -38,6 +40,8 @@ public class TicketController extends HttpServlet {
             createTicket(request, response);
         else if ("delete".equals(action))
             deleteTicket(request, response);
+        else if ("update".equals(action))
+            updateTicket(request, response);
     }
     
     private void listTickets(HttpServletRequest request, 
@@ -79,6 +83,10 @@ public class TicketController extends HttpServlet {
             conn.close();
             
             request.setAttribute("tickets", tickets);
+
+            List<Map<String, Object>> schedules = getAvailableSchedules();
+            request.setAttribute("scheduleList", schedules);
+
             request.getRequestDispatcher("/admin/tickets.jsp")
                 .forward(request, response);
         } catch (Exception e) {
@@ -130,7 +138,7 @@ public class TicketController extends HttpServlet {
             request.setAttribute("totalRevenue", totalRevenue);
             request.setAttribute("baseFare", route.baseFare);
             
-            request.getRequestDispatcher("/admin/schedule_tickets.jsp")
+            request.getRequestDispatcher("/admin/tickets.jsp")
                 .forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -145,7 +153,8 @@ public class TicketController extends HttpServlet {
             List<Map<String, Object>> availableSchedules = getAvailableSchedules();
             
             request.setAttribute("schedules", availableSchedules);
-            request.getRequestDispatcher("/admin/create_ticket.jsp")
+            request.setAttribute("ticketNumber", generateTicketNumber());
+            request.getRequestDispatcher("/admin/tickets.jsp")
                 .forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
@@ -153,7 +162,30 @@ public class TicketController extends HttpServlet {
             response.sendRedirect("ticket?action=list");
         }
     }
-    
+
+    private void showEditForm(HttpServletRequest request,
+        HttpServletResponse response) throws ServletException, IOException {
+        try {
+            Ticket ticket = new Ticket();
+            ticket.ticketID = Integer.parseInt(request.getParameter("id"));
+
+            if (ticket.getRecord() == 1){
+                request.setAttribute("editTicket", ticket);
+                request.setAttribute("scheduleList", getAvailableSchedules());
+                request.getRequestDispatcher("/admin/tickets.jsp")
+                        .forward(request, response);
+            }
+            else {
+                response.sendRedirect("ticket?action=list");
+            }
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            response.sendRedirect("ticket?action=list");
+        }
+
+    }
+
     private void viewTicketDetails(HttpServletRequest request, 
         HttpServletResponse response) throws ServletException, IOException {
         try {
@@ -193,7 +225,7 @@ public class TicketController extends HttpServlet {
                 request.setAttribute("destination", destination);
                 request.setAttribute("fare", fare);
                 
-                request.getRequestDispatcher("/admin/view_ticket.jsp")
+                request.getRequestDispatcher("/admin/tickets.jsp")
                     .forward(request, response);
             } else {
                 request.setAttribute("error", "Ticket not found");
@@ -225,7 +257,7 @@ public class TicketController extends HttpServlet {
                 request.setAttribute("scheduleID", request.getParameter("scheduleID"));
                 request.setAttribute("discounted", request.getParameter("discounted"));
                 
-                request.getRequestDispatcher("/admin/create_ticket.jsp")
+                request.getRequestDispatcher("/admin/tickets.jsp")
                     .forward(request, response);
                 return;
             }
@@ -356,7 +388,36 @@ public class TicketController extends HttpServlet {
             }
         }
     }
-    
+
+    private void updateTicket(HttpServletRequest request,
+                              HttpServletResponse response) throws ServletException, IOException {
+        try {
+            Ticket ticket = new Ticket();
+            ticket.ticketID = Integer.parseInt(request.getParameter("id"));
+            ticket.ticketNumber = request.getParameter("ticketNumber");
+            ticket.scheduleID = Integer.parseInt(request.getParameter("scheduleID"));
+            ticket.discounted = "true".equals(request.getParameter("discounted"));
+
+            if (ticket.modRecord() == 1){
+                response.sendRedirect(request.getContextPath() + "/ticket?action=list");
+            } else {
+                request.setAttribute("error", "Failed to update ticket.");
+                Map<String, Object> t = new HashMap<>();
+                t.put("ticket_id", ticket.ticketID);
+                t.put("ticket_number", ticket.ticketNumber);
+                t.put("schedule_id", ticket.scheduleID);
+                t.put("discounted", ticket.discounted);
+                request.setAttribute("editTicket", t);
+                request.getRequestDispatcher("/admin/tickets.jsp")
+                        .forward(request, response);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error updating ticket: " + e.getMessage());
+            response.sendRedirect("ticket?action=list");
+        }
+    }
+
     private void deleteTicket(HttpServletRequest request, 
         HttpServletResponse response) throws ServletException, IOException {
         try {
@@ -393,21 +454,39 @@ public class TicketController extends HttpServlet {
                     }
                     
                     request.setAttribute("success", "Ticket deleted successfully");
+                    request.getRequestDispatcher("ticket?action=list").forward(request, response);
                 } else {
                     request.setAttribute("error", "Failed to delete ticket");
                 }
             } else {
                 request.setAttribute("error", "Ticket not found");
             }
-            
-            response.sendRedirect("ticket?action=list");
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Error deleting ticket: " + e.getMessage());
             response.sendRedirect("ticket?action=list");
         }
     }
-     
+
+    /*private void deleteMaintenance(HttpServletRequest request,
+                                   HttpServletResponse response) throws ServletException, IOException {
+        try {
+            Maintenance m = new Maintenance();
+            m.maintenanceID =  Integer.parseInt(request.getParameter("id"));
+
+            if(m.delRecord() == 1) {
+                request.setAttribute("success", "Maintenance type deleted successfully");
+                response.sendRedirect("maintenance?action=list");
+            } else {
+                request.setAttribute("error", "Failed to delete maintenance type");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error deleting maintenance: " + e.getMessage());
+            response.sendRedirect("maintenance?action=list");
+        }
+    }*/
     private Map<String, String> validateTicketInput(HttpServletRequest request) {
         Map<String, String> errors = new HashMap<>();
         
@@ -561,7 +640,9 @@ public class TicketController extends HttpServlet {
     }
     
     private String generateTicketNumber() {
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd-HHmmss");
-        return "TCK-" + sdf.format(new java.util.Date()) + "-" + (int)(Math.random() * 10000);
+        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("yyyyMMdd");
+        String num =  "TKT-" + sdf.format(new java.util.Date()) + "-" + (int)(Math.random() * 1000);
+        System.out.println(num);
+        return num;
     }
 }
