@@ -41,7 +41,7 @@
             <input type="hidden" name="id" value="<%= ticket.get("ticket_id") %>">
 
             <label>Ticket Number:<br>
-                <input type="text" name="ticketNumber" value="<%= ticket.get("ticket_number") %>" required>
+                <input type="text" name="ticketNumber" value="<%= ticket.get("ticket_number") %>" readonly>
             </label><br><br>
 
             <label>Schedule:<br>
