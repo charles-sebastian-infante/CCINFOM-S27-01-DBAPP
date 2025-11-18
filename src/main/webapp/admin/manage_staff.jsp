@@ -15,6 +15,24 @@
         function confirmDelete() {
             return confirm('Are you sure you want to delete this staff member?');
         }
+
+        function validateContact(input) {
+            // Remove any non-digit characters
+            input.value = input.value.replace(/\D/g, '');
+        }
+
+        function validateForm(form) {
+            var contact = form.contact.value;
+            if (!/^\d+$/.test(contact)) {
+                alert('Contact must contain only numbers!');
+                return false;
+            }
+            if (contact.length < 10 || contact.length > 15) {
+                alert('Contact must be between 10 and 15 digits!');
+                return false;
+            }
+            return true;
+        }
     </script>
 </head>
 <body>
@@ -92,10 +110,12 @@
                 </label><br><br>
 
                 <label>Contact:<br>
-                    <input type="text" name="contact" value="<%= s.contact != null ? s.contact : "" %>" required>
+                    <input type="text" name="contact" value="<%= s.contact != null ? s.contact : "" %>" required 
+                           pattern="\d{10,15}" title="Contact must be 10-15 digits" 
+                           oninput="validateContact(this)" maxlength="15">
                 </label><br><br>
 
-                <button type="submit" class="btn btn-edit">Update Staff</button>
+                <button type="submit" class="btn btn-edit" onclick="return validateForm(this.form)">Update Staff</button>
                 <a href="<%= request.getContextPath() %>/staff?action=list">Cancel</a>
             </form>
         </div>
@@ -155,10 +175,12 @@
                 </label><br><br>
 
                 <label>Contact:<br>
-                    <input type="text" name="contact" required>
+                    <input type="text" name="contact" required 
+                           pattern="\d{10,15}" title="Contact must be 10-15 digits" 
+                           oninput="validateContact(this)" maxlength="15">
                 </label><br><br>
 
-                <button type="submit" class="btn">Create Staff</button>
+                <button type="submit" class="btn" onclick="return validateForm(this.form)">Create Staff</button>
                 <a href="<%= request.getContextPath() %>/staff?action=reassign" class="btn" style="background:#27ae60;">Staff Reassignment</a>
             </form>
         </div>
