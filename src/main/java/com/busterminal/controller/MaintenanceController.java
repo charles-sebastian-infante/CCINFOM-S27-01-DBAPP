@@ -308,7 +308,7 @@ public class MaintenanceController extends HttpServlet {
 
             if (mechanicID == null) {
                 request.setAttribute("error", "Mechanic assignment is required");
-                showNewMaintenanceForm(request,response);
+                showNewMaintenanceForm(request, response);
                 return;
             }
 
@@ -343,32 +343,37 @@ public class MaintenanceController extends HttpServlet {
                 return;
             }
 
-            // 2a. VALIDATE MECHANIC REQUIRED AND CHECK FOR DUPLICATES
-            String startingDateTime = startingDateStr + " " + startingTimeStr + ":00";
-            Timestamp startingDate = Timestamp.valueOf(startingDateTime);
-            String duplicateCheckQuery = "SELECT COUNT(*) as count FROM Maintenance WHERE " +
-                    "bus_id = ? AND maintenance_type_id = ? AND starting_date = ?";
+            // 2a. CHECK FOR ONGOING MAINTENANCE OF THE SAME TYPE ON THE SAME BUS
+            PreparedStatement ongoingCheckStmt = conn.prepareStatement(
+                    "SELECT m.maintenance_id, mt.type_name FROM Maintenance m " +
+                            "JOIN Maintenance_Type mt ON m.maintenance_type_id = mt.maintenance_type_id " +
+                            "WHERE m.bus_id = ? AND m.maintenance_type_id = ? AND m.completion_time IS NULL");
+            ongoingCheckStmt.setInt(1, busID);
+            ongoingCheckStmt.setInt(2, maintenanceTypeID);
 
-            PreparedStatement duplicateCheckStmt = conn.prepareStatement(duplicateCheckQuery);
-            duplicateCheckStmt.setInt(1, busID);
-            duplicateCheckStmt.setInt(2, maintenanceTypeID);
-            duplicateCheckStmt.setTimestamp(3, startingDate);
-
-            ResultSet duplicateRs = duplicateCheckStmt.executeQuery();
-            boolean isDuplicate = false;
-            if (duplicateRs.next()) {
-                isDuplicate = duplicateRs.getInt("count") > 0;
-            }
-            duplicateRs.close();
-            duplicateCheckStmt.close();
-
-            if (isDuplicate) {
+            ResultSet ongoingRs = ongoingCheckStmt.executeQuery();
+            if (ongoingRs.next()) {
+                String typeName = ongoingRs.getString("type_name");
+                int existingMaintenanceID = ongoingRs.getInt("maintenance_id");
+                ongoingRs.close();
+                ongoingCheckStmt.close();
                 conn.rollback();
+
                 request.setAttribute("error",
-                        "A maintenance record already exists for this maintenance type on this bus at this date/time.");
+                        String.format(
+                                "Cannot create maintenance record. There is already an ongoing '%s' maintenance (ID: %d) for this bus. "
+                                        +
+                                        "Please complete the existing maintenance before creating a new one of the same type.",
+                                typeName, existingMaintenanceID));
                 showNewMaintenanceForm(request, response);
                 return;
             }
+            ongoingRs.close();
+            ongoingCheckStmt.close();
+
+            // 2b. PREPARE TIMESTAMP FOR MAINTENANCE START
+            String startingDateTime = startingDateStr + " " + startingTimeStr + ":00";
+            Timestamp startingDate = Timestamp.valueOf(startingDateTime);
 
             // 3. CHECK FOR SCHEDULED TRIPS AND HANDLE CASCADE CANCELLATION IF ANY
             // Only check for scheduled trips if bus is Available (not already in
