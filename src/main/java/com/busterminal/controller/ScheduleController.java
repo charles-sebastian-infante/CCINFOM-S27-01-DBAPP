@@ -450,17 +450,19 @@ public class ScheduleController extends HttpServlet {
                 return;
             }
 
-            // 4a. CHECK FOR MAINTENANCE SCHEDULED ON THE SAME DAY
+            // 4a. CHECK FOR MAINTENANCE THAT OVERLAPS WITH SCHEDULE DATES
+            // For ongoing maintenance (completion_time IS NULL), the bus is occupied from
+            // starting_date onwards
             Connection tempConn = null;
             try {
                 tempConn = DBConnection.getConnection();
                 PreparedStatement maintenanceCheckStmt = tempConn.prepareStatement(
                         "SELECT COUNT(*) as maintenance_count FROM Maintenance " +
                                 "WHERE bus_id = ? AND completion_time IS NULL " +
-                                "AND (DATE(starting_date) = DATE(?) OR DATE(starting_date) = DATE(?))");
+                                "AND DATE(starting_date) <= DATE(?)");
                 maintenanceCheckStmt.setInt(1, busID);
-                maintenanceCheckStmt.setTimestamp(2, departure);
-                maintenanceCheckStmt.setTimestamp(3, arrival);
+                maintenanceCheckStmt.setTimestamp(2, arrival); // Check if maintenance starts before or on arrival
+                                                               // date
                 ResultSet maintenanceRs = maintenanceCheckStmt.executeQuery();
 
                 if (maintenanceRs.next() && maintenanceRs.getInt("maintenance_count") > 0) {
@@ -470,8 +472,9 @@ public class ScheduleController extends HttpServlet {
 
                     validationErrors.put("general",
                             String.format(
-                                    "Cannot create schedule. Bus has %d maintenance(s) scheduled on the same day. " +
-                                            "Please choose a different date or complete/reschedule the maintenance first.",
+                                    "Cannot create schedule. Bus has %d ongoing or scheduled maintenance(s) that conflict with this schedule. "
+                                            +
+                                            "Please choose a different date or complete the maintenance first.",
                                     maintenanceCount));
 
                     List<Bus> availableBuses = getAvailableBuses();
