@@ -50,6 +50,9 @@ public class MaintenanceController extends HttpServlet {
     private void listMaintenanceRecords(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
         try {
+            // Update maintenance statuses before listing
+            updateMaintenanceStatuses();
+
             String filterStatus = request.getParameter("status");
 
             Connection conn = DBConnection.getConnection();
@@ -375,6 +378,33 @@ public class MaintenanceController extends HttpServlet {
             String startingDateTime = startingDateStr + " " + startingTimeStr + ":00";
             Timestamp startingDate = Timestamp.valueOf(startingDateTime);
 
+            // 2c. CHECK FOR SCHEDULES ON THE SAME DAY AS MAINTENANCE
+            PreparedStatement sameDayCheckStmt = conn.prepareStatement(
+                    "SELECT COUNT(*) as schedule_count FROM Schedule " +
+                            "WHERE bus_id = ? AND status IN ('Scheduled', 'Departed') " +
+                            "AND (DATE(departure_time) = DATE(?) OR DATE(arrival_time) = DATE(?))");
+            sameDayCheckStmt.setInt(1, busID);
+            sameDayCheckStmt.setTimestamp(2, startingDate);
+            sameDayCheckStmt.setTimestamp(3, startingDate);
+            ResultSet sameDayRs = sameDayCheckStmt.executeQuery();
+
+            if (sameDayRs.next() && sameDayRs.getInt("schedule_count") > 0) {
+                int scheduleCount = sameDayRs.getInt("schedule_count");
+                sameDayRs.close();
+                sameDayCheckStmt.close();
+                conn.rollback();
+
+                request.setAttribute("error",
+                        String.format(
+                                "Cannot schedule maintenance on this date. Bus has %d schedule(s) on the same day. " +
+                                        "Please choose a different date or cancel the conflicting schedules first.",
+                                scheduleCount));
+                showNewMaintenanceForm(request, response);
+                return;
+            }
+            sameDayRs.close();
+            sameDayCheckStmt.close();
+
             // 3. CHECK FOR SCHEDULED TRIPS AND HANDLE CASCADE CANCELLATION IF ANY
             // Only check for scheduled trips if bus is Available (not already in
             // Maintenance)
@@ -458,8 +488,11 @@ public class MaintenanceController extends HttpServlet {
             generatedKeys.close();
             insertStmt.close();
 
-            // 5. UPDATE BUS STATUS TO 'Maintenance' (only if not already in Maintenance)
-            if (!"Maintenance".equals(busStatus)) {
+            // 5. UPDATE BUS STATUS TO 'Maintenance' ONLY IF MAINTENANCE STARTS NOW OR IN
+            // THE PAST
+            Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+            if (!"Maintenance".equals(busStatus) && !startingDate.after(currentTime)) {
+                // Maintenance has started or is starting now
                 PreparedStatement updateBusStmt = conn.prepareStatement(
                         "UPDATE Bus SET status = 'Maintenance' WHERE bus_id = ?");
                 updateBusStmt.setInt(1, busID);
@@ -1008,6 +1041,62 @@ public class MaintenanceController extends HttpServlet {
         } catch (SQLException e) {
             System.out.println(e.getMessage());
             return false;
+        }
+    }
+
+    /**
+     * Automatically update bus statuses based on scheduled maintenance
+     * This should be called periodically (e.g., when loading maintenance list)
+     */
+    public static void updateMaintenanceStatuses() {
+        Connection conn = null;
+        try {
+            conn = DBConnection.getConnection();
+            Timestamp currentTime = new Timestamp(System.currentTimeMillis());
+
+            // Find all scheduled maintenances that should have started
+            PreparedStatement scheduledStmt = conn.prepareStatement(
+                    "SELECT m.maintenance_id, m.bus_id FROM Maintenance m " +
+                            "JOIN Bus b ON m.bus_id = b.bus_id " +
+                            "WHERE m.completion_time IS NULL " +
+                            "AND m.starting_date <= ? " +
+                            "AND b.status != 'Maintenance'");
+            scheduledStmt.setTimestamp(1, currentTime);
+            ResultSet rs = scheduledStmt.executeQuery();
+
+            List<Integer> busesToUpdate = new ArrayList<>();
+            while (rs.next()) {
+                busesToUpdate.add(rs.getInt("bus_id"));
+            }
+            rs.close();
+            scheduledStmt.close();
+
+            // Update bus statuses to Maintenance
+            for (Integer busID : busesToUpdate) {
+                PreparedStatement updateStmt = conn.prepareStatement(
+                        "UPDATE Bus SET status = 'Maintenance' WHERE bus_id = ?");
+                updateStmt.setInt(1, busID);
+                int updated = updateStmt.executeUpdate();
+                updateStmt.close();
+
+                if (updated > 0) {
+                    System.out
+                            .println("Updated bus " + busID + " status to Maintenance (scheduled maintenance started)");
+                }
+            }
+
+            conn.close();
+        } catch (Exception e) {
+            System.out.println("Error updating maintenance statuses: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }
