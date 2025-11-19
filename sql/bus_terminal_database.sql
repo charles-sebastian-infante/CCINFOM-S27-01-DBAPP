@@ -11,7 +11,7 @@ USE bus_terminal_management;
 CREATE TABLE Terminal (
     terminal_id INT PRIMARY KEY AUTO_INCREMENT,
     terminal_name VARCHAR(100) UNIQUE NOT NULL,
-    address VARCHAR(255) NOT NULL,
+    address VARCHAR(255) UNIQUE NOT NULL,
     phone VARCHAR(20) UNIQUE  -- ADDED UNIQUE constraint per requirements
 );
 
