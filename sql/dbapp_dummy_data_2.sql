@@ -89,36 +89,36 @@ INSERT INTO bus (bus_id, bus_number, capacity, status, current_terminal) VALUES
 -- =====================================================
 INSERT INTO schedule (schedule_id, bus_id, route_id, departure_time, arrival_time, status) VALUES
 -- DEPARTED - Left early morning (6:00-7:30 AM), currently in transit
-(1, 1, 7, '2025-11-21 06:00:00', '2025-11-21 12:00:00', 'Departed'),     -- Manila to Baguio
-(2, 5, 5, '2025-11-21 06:30:00', '2025-11-21 14:30:00', 'Departed'),     -- Manila to Naga
-(3, 9, 16, '2025-11-21 07:00:00', '2025-11-21 10:30:00', 'Departed'),    -- Lucena to Manila
-(4, 17, 17, '2025-11-21 07:30:00', '2025-11-21 13:30:00', 'Departed'),   -- Baguio to Manila
+(1, 1, 7, '2025-11-21 06:00:00', '2025-11-21 12:00:00', 'Departed'),     -- Manila to Baguio (6 hrs)
+(2, 5, 5, '2025-11-21 06:30:00', '2025-11-21 13:30:00', 'Departed'),     -- Manila to Naga (7 hrs)
+(3, 9, 16, '2025-11-21 07:00:00', '2025-11-21 10:30:00', 'Departed'),    -- Lucena to Manila (3.5 hrs)
+(4, 17, 17, '2025-11-21 07:30:00', '2025-11-21 13:30:00', 'Departed'),   -- Baguio to Manila (6 hrs)
 
 -- SCHEDULED - Departing soon or later today (9:00 AM onwards)
-(5, 2, 1, '2025-11-21 09:00:00', '2025-11-21 12:30:00', 'Scheduled'),    -- Manila to Lucena
-(6, 4, 2, '2025-11-21 09:30:00', '2025-11-21 12:00:00', 'Scheduled'),    -- Manila to Lipa
-(7, 7, 8, '2025-11-21 10:00:00', '2025-11-21 15:00:00', 'Scheduled'),    -- Manila to Dagupan
-(8, 13, 11, '2025-11-21 11:00:00', '2025-11-21 12:00:00', 'Scheduled'),  -- Calamba to Lipa
-(9, 15, 18, '2025-11-21 12:00:00', '2025-11-21 20:00:00', 'Scheduled'),  -- Naga to Manila
-(10, 2, 16, '2025-11-21 14:00:00', '2025-11-21 17:30:00', 'Scheduled'),  -- Return trip for bus 2
-(11, 4, 1, '2025-11-21 15:00:00', '2025-11-21 18:30:00', 'Scheduled'),   -- Return trip for bus 4
+(5, 2, 1, '2025-11-21 09:00:00', '2025-11-21 12:30:00', 'Scheduled'),    -- Manila to Lucena (3.5 hrs)
+(6, 4, 2, '2025-11-21 09:30:00', '2025-11-21 12:00:00', 'Scheduled'),    -- Manila to Lipa (2.5 hrs)
+(7, 7, 8, '2025-11-21 10:00:00', '2025-11-21 15:00:00', 'Scheduled'),    -- Manila to Dagupan (5 hrs)
+(8, 13, 11, '2025-11-21 11:00:00', '2025-11-21 12:00:00', 'Scheduled'),  -- Calamba to Lipa (1 hr)
+(9, 15, 18, '2025-11-21 12:00:00', '2025-11-21 19:00:00', 'Scheduled'),  -- Naga to Manila (7 hrs)
+(10, 2, 16, '2025-11-21 14:00:00', '2025-11-21 17:30:00', 'Scheduled'),  -- Return trip for bus 2 (3.5 hrs)
+(11, 4, 1, '2025-11-21 15:00:00', '2025-11-21 18:30:00', 'Scheduled'),   -- Return trip for bus 4 (3.5 hrs)
 
 -- COMPLETED - Yesterday's trips (Nov 20)
-(12, 1, 1, '2025-11-20 08:00:00', '2025-11-20 11:30:00', 'Completed'),   -- Manila to Lucena
-(13, 2, 2, '2025-11-20 09:00:00', '2025-11-20 11:30:00', 'Completed'),   -- Manila to Lipa
-(14, 5, 8, '2025-11-20 10:00:00', '2025-11-20 15:00:00', 'Completed'),   -- Manila to Dagupan
-(15, 17, 7, '2025-11-20 06:00:00', '2025-11-20 12:00:00', 'Completed'),  -- Manila to Baguio
+(12, 1, 1, '2025-11-20 08:00:00', '2025-11-20 11:30:00', 'Completed'),   -- Manila to Lucena (3.5 hrs)
+(13, 2, 2, '2025-11-20 09:00:00', '2025-11-20 11:30:00', 'Completed'),   -- Manila to Lipa (2.5 hrs)
+(14, 5, 8, '2025-11-20 10:00:00', '2025-11-20 15:00:00', 'Completed'),   -- Manila to Dagupan (5 hrs)
+(15, 17, 7, '2025-11-20 06:00:00', '2025-11-20 12:00:00', 'Completed'),  -- Manila to Baguio (6 hrs)
 
 -- COMPLETED - Day before yesterday (Nov 19)
-(16, 4, 9, '2025-11-19 07:30:00', '2025-11-19 10:30:00', 'Completed'),   -- Manila to Tarlac
-(17, 7, 1, '2025-11-19 14:00:00', '2025-11-19 17:30:00', 'Completed'),   -- Manila to Lucena
-(18, 13, 3, '2025-11-19 09:00:00', '2025-11-19 11:00:00', 'Completed'),  -- Manila to Calamba
+(16, 4, 9, '2025-11-19 07:30:00', '2025-11-19 10:30:00', 'Completed'),   -- Manila to Tarlac (3 hrs)
+(17, 7, 1, '2025-11-19 14:00:00', '2025-11-19 17:30:00', 'Completed'),   -- Manila to Lucena (3.5 hrs)
+(18, 13, 3, '2025-11-19 09:00:00', '2025-11-19 11:00:00', 'Completed'),  -- Manila to Calamba (2 hrs)
 
 -- FUTURE SCHEDULES - Tomorrow (Nov 22)
-(19, 1, 1, '2025-11-22 08:00:00', '2025-11-22 11:30:00', 'Scheduled'),   -- Manila to Lucena
-(20, 2, 7, '2025-11-22 06:00:00', '2025-11-22 12:00:00', 'Scheduled'),   -- Manila to Baguio
-(21, 5, 2, '2025-11-22 09:00:00', '2025-11-22 11:30:00', 'Scheduled'),   -- Manila to Lipa
-(22, 7, 8, '2025-11-22 10:00:00', '2025-11-22 15:00:00', 'Scheduled');   -- Manila to Dagupan
+(19, 1, 1, '2025-11-22 08:00:00', '2025-11-22 11:30:00', 'Scheduled'),   -- Manila to Lucena (3.5 hrs)
+(20, 2, 7, '2025-11-22 06:00:00', '2025-11-22 12:00:00', 'Scheduled'),   -- Manila to Baguio (6 hrs)
+(21, 5, 2, '2025-11-22 09:00:00', '2025-11-22 11:30:00', 'Scheduled'),   -- Manila to Lipa (2.5 hrs)
+(22, 7, 8, '2025-11-22 10:00:00', '2025-11-22 15:00:00', 'Scheduled');   -- Manila to Dagupan (5 hrs)
 
 -- =====================================================
 -- 6.0 STAFF DATA
