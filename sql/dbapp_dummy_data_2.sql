@@ -59,63 +59,66 @@ INSERT INTO route (route_id, route_name, origin_id, destination_id, distance, tr
 -- =====================================================
 INSERT INTO bus (bus_id, bus_number, capacity, status, current_terminal) VALUES
 -- Manila terminal buses
-(1, 'MAM-1001', 45, 'Scheduled', 1),
-(2, 'MAM-1002', 45, 'Available', 1),
-(3, 'MAM-1003', 50, 'Scheduled', 1),
-(4, 'MAM-1004', 45, 'In Transit', 1),
-(5, 'MAM-1005', 40, 'Available', 1),
-(6, 'MAM-1006', 50, 'Scheduled', 1),
+(1, 'MAM-1001', 45, 'In Transit', 1),      -- Currently on the road
+(2, 'MAM-1002', 45, 'Scheduled', 1),       -- Has upcoming schedule
+(3, 'MAM-1003', 50, 'Available', 1),       -- Ready for assignment
+(4, 'MAM-1004', 45, 'Scheduled', 1),       -- Has upcoming schedule
+(5, 'MAM-1005', 40, 'Scheduled', 1),       -- Has morning schedule
+(6, 'MAM-1006', 50, 'Available', 1),       -- Ready for assignment
+(7, 'MAM-1007', 45, 'Scheduled', 1),       -- Has afternoon schedule
+(8, 'MAM-1008', 50, 'Maintenance', 1),     -- Under maintenance
 
 -- Provincial terminal buses
-(7, 'MAM-2001', 45, 'In Transit', 2),
-(8, 'MAM-2002', 40, 'Available', 2),
-(9, 'MAM-3001', 40, 'Maintenance', 3),
-(10, 'MAM-3002', 45, 'Available', 3),
-(11, 'MAM-4001', 45, 'Scheduled', 4),
-(12, 'MAM-5001', 50, 'Available', 5),
-(13, 'MAM-6001', 45, 'Scheduled', 6),
-(14, 'MAM-7001', 45, 'In Transit', 7),
-(15, 'MAM-8001', 50, 'Scheduled', 8),
-(16, 'MAM-8002', 45, 'Available', 8),
-(17, 'MAM-9001', 40, 'Scheduled', 9),
-(18, 'MAM-10001', 45, 'Available', 10),
-(19, 'MAM-1007', 45, 'Available', 1),
-(20, 'MAM-1008', 50, 'Maintenance', 1);
+(9, 'MAM-2001', 45, 'In Transit', 2),      -- Currently traveling back to Manila
+(10, 'MAM-2002', 40, 'Available', 2),      -- At Lucena, ready
+(11, 'MAM-3001', 40, 'Maintenance', 3),    -- Under maintenance at Lipa
+(12, 'MAM-3002', 45, 'Available', 3),      -- At Lipa, ready
+(13, 'MAM-4001', 45, 'Scheduled', 4),      -- At Calamba, has schedule
+(14, 'MAM-5001', 50, 'Available', 5),      -- At Calapan, ready
+(15, 'MAM-6001', 45, 'Scheduled', 6),      -- At Naga, has schedule
+(16, 'MAM-7001', 45, 'Available', 7),      -- At Legazpi, ready
+(17, 'MAM-8001', 50, 'Scheduled', 8),      -- At Baguio, has morning schedule
+(18, 'MAM-8002', 45, 'Available', 8),      -- At Baguio, ready
+(19, 'MAM-9001', 40, 'Available', 9),      -- At Dagupan, ready
+(20, 'MAM-10001', 45, 'Available', 10);    -- At Tarlac, ready
 
 -- =====================================================
 -- 5.0 SCHEDULE DATA
--- Bus schedules for today and upcoming trips
+-- Bus schedules around Nov 21, 2025, 8:30 AM
+-- Current time reference: Nov 21, 2025, 8:30 AM
 -- =====================================================
 INSERT INTO schedule (schedule_id, bus_id, route_id, departure_time, arrival_time, status) VALUES
--- Scheduled trips
-(1, 1, 1, '2025-10-27 08:00:00', '2025-10-27 11:30:00', 'Scheduled'),
-(2, 2, 2, '2025-10-27 09:00:00', '2025-10-27 11:30:00', 'Scheduled'),
-(3, 3, 5, '2025-10-27 06:00:00', '2025-10-27 14:00:00', 'Scheduled'),
-(4, 6, 9, '2025-10-27 07:30:00', '2025-10-27 12:30:00', 'Scheduled'),
-(5, 11, 11, '2025-10-27 10:00:00', '2025-10-27 11:00:00', 'Scheduled'),
-(6, 13, 18, '2025-10-27 09:30:00', '2025-10-27 17:30:00', 'Scheduled'),
-(7, 15, 17, '2025-10-27 05:00:00', '2025-10-27 11:00:00', 'Scheduled'),
-(8, 17, 15, '2025-10-27 08:00:00', '2025-10-27 10:00:00', 'Scheduled'),
+-- DEPARTED - Left early morning (6:00-7:30 AM), currently in transit
+(1, 1, 7, '2025-11-21 06:00:00', '2025-11-21 12:00:00', 'Departed'),     -- Manila to Baguio
+(2, 5, 5, '2025-11-21 06:30:00', '2025-11-21 14:30:00', 'Departed'),     -- Manila to Naga
+(3, 9, 16, '2025-11-21 07:00:00', '2025-11-21 10:30:00', 'Departed'),    -- Lucena to Manila
+(4, 17, 17, '2025-11-21 07:30:00', '2025-11-21 13:30:00', 'Departed'),   -- Baguio to Manila
 
--- Departed trips
-(9, 4, 7, '2025-10-27 05:10:00', '2025-10-27 11:00:00', 'Departed'),
-(10, 7, 16, '2025-10-27 07:05:00', '2025-10-27 10:30:00', 'Departed'),
-(11, 14, 19, '2025-10-27 06:35:00', '2025-10-27 16:30:00', 'Departed'),
+-- SCHEDULED - Departing soon or later today (9:00 AM onwards)
+(5, 2, 1, '2025-11-21 09:00:00', '2025-11-21 12:30:00', 'Scheduled'),    -- Manila to Lucena
+(6, 4, 2, '2025-11-21 09:30:00', '2025-11-21 12:00:00', 'Scheduled'),    -- Manila to Lipa
+(7, 7, 8, '2025-11-21 10:00:00', '2025-11-21 15:00:00', 'Scheduled'),    -- Manila to Dagupan
+(8, 13, 11, '2025-11-21 11:00:00', '2025-11-21 12:00:00', 'Scheduled'),  -- Calamba to Lipa
+(9, 15, 18, '2025-11-21 12:00:00', '2025-11-21 20:00:00', 'Scheduled'),  -- Naga to Manila
+(10, 2, 16, '2025-11-21 14:00:00', '2025-11-21 17:30:00', 'Scheduled'),  -- Return trip for bus 2
+(11, 4, 1, '2025-11-21 15:00:00', '2025-11-21 18:30:00', 'Scheduled'),   -- Return trip for bus 4
 
--- Completed trips
-(12, 1, 1, '2025-10-26 08:05:00', '2025-10-26 11:45:00', 'Completed'),
-(13, 2, 2, '2025-10-26 14:10:00', '2025-10-26 16:40:00', 'Completed'),
-(14, 15, 17, '2025-10-25 05:00:00', '2025-10-25 11:15:00', 'Completed'),
+-- COMPLETED - Yesterday's trips (Nov 20)
+(12, 1, 1, '2025-11-20 08:00:00', '2025-11-20 11:30:00', 'Completed'),   -- Manila to Lucena
+(13, 2, 2, '2025-11-20 09:00:00', '2025-11-20 11:30:00', 'Completed'),   -- Manila to Lipa
+(14, 5, 8, '2025-11-20 10:00:00', '2025-11-20 15:00:00', 'Completed'),   -- Manila to Dagupan
+(15, 17, 7, '2025-11-20 06:00:00', '2025-11-20 12:00:00', 'Completed'),  -- Manila to Baguio
 
--- Cancelled trip
-(15, 19, 14, '2025-10-27 12:00:00', '2025-10-27 14:00:00', 'Cancelled'),
+-- COMPLETED - Day before yesterday (Nov 19)
+(16, 4, 9, '2025-11-19 07:30:00', '2025-11-19 10:30:00', 'Completed'),   -- Manila to Tarlac
+(17, 7, 1, '2025-11-19 14:00:00', '2025-11-19 17:30:00', 'Completed'),   -- Manila to Lucena
+(18, 13, 3, '2025-11-19 09:00:00', '2025-11-19 11:00:00', 'Completed'),  -- Manila to Calamba
 
--- Future schedules
-(16, 1, 1, '2025-10-27 14:00:00', '2025-10-27 17:30:00', 'Scheduled'),
-(17, 2, 2, '2025-10-27 15:00:00', '2025-10-27 17:30:00', 'Scheduled'),
-(18, 5, 8, '2025-10-28 06:00:00', '2025-10-28 12:00:00', 'Scheduled'),
-(19, 6, 9, '2025-10-28 07:00:00', '2025-10-28 12:00:00', 'Scheduled'),
-(20, 8, 12, '2025-10-28 08:00:00', '2025-10-28 13:30:00', 'Scheduled');
+-- FUTURE SCHEDULES - Tomorrow (Nov 22)
+(19, 1, 1, '2025-11-22 08:00:00', '2025-11-22 11:30:00', 'Scheduled'),   -- Manila to Lucena
+(20, 2, 7, '2025-11-22 06:00:00', '2025-11-22 12:00:00', 'Scheduled'),   -- Manila to Baguio
+(21, 5, 2, '2025-11-22 09:00:00', '2025-11-22 11:30:00', 'Scheduled'),   -- Manila to Lipa
+(22, 7, 8, '2025-11-22 10:00:00', '2025-11-22 15:00:00', 'Scheduled');   -- Manila to Dagupan
 
 -- =====================================================
 -- 6.0 STAFF DATA
@@ -124,50 +127,52 @@ INSERT INTO schedule (schedule_id, bus_id, route_id, departure_time, arrival_tim
 -- =====================================================
 INSERT INTO staff (staff_id, staff_name, role_id, assigned_terminal, assigned_bus, shift, contact) VALUES
 -- Manila Terminal Staff
-(1, 'Juan Dela Cruz', 1, 1, 1, 'Morning', '09171234567'),          -- Driver
-(2, 'Pedro Santos', 2, 1, 1, 'Morning', '09181234568'),             -- Conductor
-(3, 'Ricardo Morales', 1, 1, 2, 'Morning', '09171234569'),          -- Driver
-(4, 'Ana Garcia', 2, 1, 2, 'Morning', '09181234570'),               -- Conductor
+(1, 'Juan Dela Cruz', 1, 1, 1, 'Morning', '09171234567'),          -- Driver for bus 1
+(2, 'Pedro Santos', 2, 1, 1, 'Morning', '09181234568'),             -- Conductor for bus 1
+(3, 'Ricardo Morales', 1, 1, 2, 'Morning', '09171234569'),          -- Driver for bus 2
+(4, 'Ana Garcia', 2, 1, 2, 'Morning', '09181234570'),               -- Conductor for bus 2
 (5, 'Maria Lopez', 3, 1, NULL, 'Morning', '09192223334'),           -- Manager
-(6, 'Carlos Mendoza', 1, 1, 3, 'Morning', '09171234571'),           -- Driver
-(7, 'Teresa Cruz', 2, 1, 3, 'Morning', '09181234572'),              -- Conductor
-(8, 'Roberto Gonzales', 1, 1, 4, 'Morning', '09171234573'),         -- Driver
-(9, 'Lisa Fernandez', 2, 1, 4, 'Morning', '09181234574'),           -- Conductor
+(6, 'Carlos Mendoza', 1, 1, 4, 'Morning', '09171234571'),           -- Driver for bus 4
+(7, 'Teresa Cruz', 2, 1, 4, 'Morning', '09181234572'),              -- Conductor for bus 4
+(8, 'Roberto Gonzales', 1, 1, 5, 'Morning', '09171234573'),         -- Driver for bus 5
+(9, 'Lisa Fernandez', 2, 1, 5, 'Morning', '09181234574'),           -- Conductor for bus 5
 (10, 'Miguel Torres', 4, 1, NULL, 'Morning', '09183335555'),        -- Mechanic
+(11, 'Jose Valencia', 1, 1, 7, 'Morning', '09171234580'),           -- Driver for bus 7
+(12, 'Carmen Reyes', 2, 1, 7, 'Morning', '09181234581'),            -- Conductor for bus 7
 
 -- Lucena Terminal Staff
-(11, 'Antonio Reyes', 1, 2, 7, 'Morning', '09171234575'),           -- Driver
-(12, 'Carmen Silva', 2, 2, 7, 'Morning', '09181234576'),            -- Conductor
-(13, 'Francisco Ramos', 3, 2, NULL, 'Evening', '09192223335'),      -- Manager
-(14, 'Gabriel Santos', 4, 2, NULL, 'Evening', '09183335557'),       -- Mechanic
+(13, 'Antonio Reyes', 1, 2, 9, 'Morning', '09171234575'),           -- Driver for bus 9
+(14, 'Carmen Silva', 2, 2, 9, 'Morning', '09181234576'),            -- Conductor for bus 9
+(15, 'Francisco Ramos', 3, 2, NULL, 'Evening', '09192223335'),      -- Manager
+(16, 'Gabriel Santos', 4, 2, NULL, 'Evening', '09183335557'),       -- Mechanic
 
 -- Lipa Terminal Staff
-(15, 'Jose Reyes', 4, 3, NULL, 'Evening', '09183335556'),           -- Mechanic
-(16, 'Daniel Castro', 1, 3, 10, 'Evening', '09171234577'),          -- Driver
-(17, 'Elena Martinez', 2, 3, 10, 'Evening', '09181234578'),         -- Conductor
+(17, 'Jose Reyes', 4, 3, NULL, 'Evening', '09183335556'),           -- Mechanic
+(18, 'Daniel Castro', 1, 3, 12, 'Evening', '09171234577'),          -- Driver for bus 12
+(19, 'Elena Martinez', 2, 3, 12, 'Evening', '09181234578'),         -- Conductor for bus 12
 
 -- Calamba Terminal Staff
-(18, 'Rafael Domingo', 1, 4, 11, 'Morning', '09171234579'),         -- Driver
-(19, 'Sofia Hernandez', 2, 4, 11, 'Morning', '09181234580'),        -- Conductor
+(20, 'Rafael Domingo', 1, 4, 13, 'Morning', '09171234579'),         -- Driver for bus 13
+(21, 'Sofia Hernandez', 2, 4, 13, 'Morning', '09181234580'),        -- Conductor for bus 13
 
 -- Naga Terminal Staff
-(20, 'Luis Ventura', 1, 6, 13, 'Morning', '09171234581'),           -- Driver
-(21, 'Patricia Romero', 2, 6, 13, 'Morning', '09181234582'),        -- Conductor
-(22, 'Alejandro Perez', 3, 6, NULL, 'Evening', '09192223336'),      -- Manager
+(22, 'Luis Ventura', 1, 6, 15, 'Morning', '09171234581'),           -- Driver for bus 15
+(23, 'Patricia Romero', 2, 6, 15, 'Morning', '09181234582'),        -- Conductor for bus 15
+(24, 'Alejandro Perez', 3, 6, NULL, 'Evening', '09192223336'),      -- Manager
 
 -- Legazpi Terminal Staff
-(23, 'Fernando Diaz', 1, 7, 14, 'Morning', '09171234583'),          -- Driver
-(24, 'Isabella Cruz', 2, 7, 14, 'Morning', '09181234584'),          -- Conductor
+(25, 'Fernando Diaz', 1, 7, 16, 'Morning', '09171234583'),          -- Driver for bus 16
+(26, 'Isabella Cruz', 2, 7, 16, 'Morning', '09181234584'),          -- Conductor for bus 16
 
 -- Baguio Terminal Staff
-(25, 'Eduardo Lopez', 1, 8, 15, 'Morning', '09171234585'),          -- Driver
-(26, 'Monica Rivera', 2, 8, 15, 'Morning', '09181234586'),          -- Conductor
-(27, 'Santiago Flores', 3, 8, NULL, 'Evening', '09192223337'),      -- Manager
-(28, 'Victor Aguilar', 4, 8, NULL, 'Evening', '09183335558'),       -- Mechanic
+(27, 'Eduardo Lopez', 1, 8, 17, 'Morning', '09171234585'),          -- Driver for bus 17
+(28, 'Monica Rivera', 2, 8, 17, 'Morning', '09181234586'),          -- Conductor for bus 17
+(29, 'Santiago Flores', 3, 8, NULL, 'Evening', '09192223337'),      -- Manager
+(30, 'Victor Aguilar', 4, 8, NULL, 'Evening', '09183335558'),       -- Mechanic
 
 -- Dagupan Terminal Staff
-(29, 'Ramón Torres', 1, 9, 17, 'Morning', '09171234587'),           -- Driver
-(30, 'Andrea Castillo', 2, 9, 17, 'Morning', '09181234588'); 		-- Conductor
+(31, 'Ramón Torres', 1, 9, 19, 'Morning', '09171234587'),           -- Driver for bus 19
+(32, 'Andrea Castillo', 2, 9, 19, 'Morning', '09181234588');        -- Conductor for bus 19
 
 -- =====================================================
 -- 7.0 MAINTENANCE TYPE DATA
@@ -195,47 +200,55 @@ INSERT INTO maintenance_type (maintenance_type_id, type_name, maintenance_cost) 
 
 -- =====================================================
 -- 8.0 MAINTENANCE DATA
--- Maintenance records for buses
+-- Maintenance records for buses (around Nov 21, 2025)
 -- =====================================================
 INSERT INTO maintenance (maintenance_id, bus_id, assigned_mechanic, maintenance_type_id, starting_date, completion_time) VALUES
--- Pending maintenance (completion_time is NULL)
-(1, 9, 10, 1, '2025-10-27 09:00:00', NULL),
-(2, 9, 10, 2, '2025-10-27 09:00:00', NULL),
-(3, 20, 15, 3, '2025-10-27 10:00:00', NULL),
-(4, 20, 15, 4, '2025-10-27 10:00:00', NULL),
-(5, 9, 10, 5, '2025-10-27 14:00:00', NULL),
+-- ONGOING MAINTENANCE (completion_time is NULL) - Started today or recently
+(1, 11, 17, 1, '2025-11-21 08:00:00', NULL),     -- MAM-3001 Engine Oil Change
+(2, 11, 17, 2, '2025-11-21 08:00:00', NULL),     -- MAM-3001 Brake Inspection
+(3, 8, 10, 3, '2025-11-20 14:00:00', NULL),      -- MAM-1008 Transmission Check (started yesterday)
+(4, 8, 10, 4, '2025-11-20 14:00:00', NULL),      -- MAM-1008 Tire Replacement (started yesterday)
+(5, 11, 17, 5, '2025-11-21 13:00:00', NULL),     -- MAM-3001 AC Repair (scheduled for later today)
 
--- Completed maintenance
-(6, 1, 10, 6, '2025-10-20 14:00:00', '2025-10-20 16:30:00'),
-(7, 2, 10, 1, '2025-10-22 09:00:00', '2025-10-22 11:00:00'),
-(8, 2, 10, 7, '2025-10-22 09:00:00', '2025-10-22 11:00:00'),
-(9, 3, 10, 8, '2025-10-23 10:00:00', '2025-10-23 13:00:00'),
-(10, 4, 10, 9, '2025-10-24 08:00:00', '2025-10-24 11:30:00'),
-(11, 5, 10, 10, '2025-10-25 11:00:00', '2025-10-25 13:00:00'),
-(12, 5, 10, 11, '2025-10-25 11:00:00', '2025-10-25 13:00:00'),
-(13, 7, 14, 12, '2025-10-21 13:00:00', '2025-10-21 17:00:00'),
-(14, 8, 28, 13, '2025-10-19 15:00:00', '2025-10-19 16:30:00'),
-(15, 8, 28, 14, '2025-10-19 15:00:00', '2025-10-19 16:30:00'),
-(16, 10, 15, 15, '2025-10-18 09:00:00', '2025-10-18 12:00:00'),
-(17, 15, 28, 16, '2025-10-17 10:00:00', '2025-10-17 14:00:00'),
-(18, 15, 28, 17, '2025-10-17 10:00:00', '2025-10-17 14:00:00'),
-(19, 6, 10, 18, '2025-10-16 14:00:00', '2025-10-16 18:00:00');
+-- COMPLETED MAINTENANCE - Recent history (last 7 days)
+(6, 1, 10, 6, '2025-11-20 14:00:00', '2025-11-20 16:30:00'),   -- Bus 1 routine checkup
+(7, 2, 10, 1, '2025-11-19 09:00:00', '2025-11-19 11:00:00'),   -- Bus 2 oil change
+(8, 2, 10, 7, '2025-11-19 09:00:00', '2025-11-19 11:00:00'),   -- Bus 2 filter replacement
+(9, 4, 10, 8, '2025-11-18 10:00:00', '2025-11-18 13:00:00'),   -- Bus 4 brake pads
+(10, 5, 10, 9, '2025-11-17 08:00:00', '2025-11-17 11:30:00'),  -- Bus 5 suspension
+(11, 7, 10, 10, '2025-11-16 11:00:00', '2025-11-16 13:00:00'), -- Bus 7 battery
+(12, 7, 10, 11, '2025-11-16 11:00:00', '2025-11-16 13:00:00'), -- Bus 7 electrical check
+(13, 9, 16, 12, '2025-11-15 13:00:00', '2025-11-15 17:00:00'), -- Bus 9 engine tune-up
+(14, 17, 30, 13, '2025-11-15 15:00:00', '2025-11-15 16:30:00'),-- Bus 17 tire rotation
+(15, 17, 30, 14, '2025-11-15 15:00:00', '2025-11-15 16:30:00'),-- Bus 17 wheel alignment
+(16, 12, 17, 15, '2025-11-14 09:00:00', '2025-11-14 12:00:00'),-- Bus 12 cooling system
+(17, 15, 24, 16, '2025-11-14 10:00:00', '2025-11-14 14:00:00'),-- Bus 15 interior cleaning
+(18, 15, 24, 17, '2025-11-14 10:00:00', '2025-11-14 14:00:00'),-- Bus 15 sanitization
+(19, 6, 10, 18, '2025-11-13 14:00:00', '2025-11-13 18:00:00'); -- Bus 6 windshield
 
 -- =====================================================
 -- 9.0 TICKET DATA
--- Sample ticket bookings
+-- Sample ticket bookings for Nov 21, 2025 schedules
 -- =====================================================
 INSERT INTO ticket (ticket_id, ticket_number, schedule_id, discounted) VALUES
-(1, 'TKT-20251027-001', 1, 0),
-(2, 'TKT-20251027-002', 1, 1),
-(3, 'TKT-20251027-003', 2, 0),
-(4, 'TKT-20251027-004', 3, 0),
-(5, 'TKT-20251027-005', 4, 1),
-(6, 'TKT-20251027-006', 5, 0),
-(7, 'TKT-20251027-007', 6, 0),
-(8, 'TKT-20251027-008', 7, 1),
-(9, 'TKT-20251027-009', 8, 0),
-(10, 'TKT-20251027-010', 9, 0),
-(11, 'TKT-20251026-001', 12, 0),
-(12, 'TKT-20251026-002', 13, 1),
-(13, 'TKT-20251025-001', 14, 0);
+-- Tickets for departed trips (schedules 1-4)
+(1, 'TKT-20251121-001', 1, 0),    -- Manila to Baguio
+(2, 'TKT-20251121-002', 1, 1),    -- Manila to Baguio (discounted)
+(3, 'TKT-20251121-003', 2, 0),    -- Manila to Naga
+(4, 'TKT-20251121-004', 2, 1),    -- Manila to Naga (discounted)
+(5, 'TKT-20251121-005', 3, 0),    -- Lucena to Manila
+(6, 'TKT-20251121-006', 4, 0),    -- Baguio to Manila
+
+-- Tickets for upcoming trips (schedules 5-11)
+(7, 'TKT-20251121-007', 5, 0),    -- Manila to Lucena (9:00 AM)
+(8, 'TKT-20251121-008', 5, 1),    -- Manila to Lucena (discounted)
+(9, 'TKT-20251121-009', 6, 0),    -- Manila to Lipa (9:30 AM)
+(10, 'TKT-20251121-010', 7, 0),   -- Manila to Dagupan (10:00 AM)
+(11, 'TKT-20251121-011', 8, 1),   -- Calamba to Lipa (discounted)
+(12, 'TKT-20251121-012', 9, 0),   -- Naga to Manila (12:00 PM)
+
+-- Tickets for yesterday's completed trips (Nov 20)
+(13, 'TKT-20251120-001', 12, 0),  -- Completed trip
+(14, 'TKT-20251120-002', 13, 1),  -- Completed trip (discounted)
+(15, 'TKT-20251120-003', 14, 0),  -- Completed trip
+(16, 'TKT-20251120-004', 15, 0);  -- Completed trip
