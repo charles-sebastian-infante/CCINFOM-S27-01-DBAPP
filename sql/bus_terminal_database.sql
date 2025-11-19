@@ -148,7 +148,7 @@ CREATE TABLE Maintenance_Type (
 CREATE TABLE Maintenance (
     maintenance_id INT PRIMARY KEY AUTO_INCREMENT,
     bus_id INT NOT NULL,
-    assigned_mechanic INT,
+    assigned_mechanic INT NOT NULL,
     maintenance_type_id INT,
     starting_date DATETIME DEFAULT CURRENT_TIMESTAMP,
     completion_time DATETIME,
@@ -163,8 +163,11 @@ CREATE TABLE Maintenance (
         
     FOREIGN KEY (assigned_mechanic) REFERENCES Staff(staff_id)
         ON UPDATE CASCADE
-        ON DELETE SET NULL,  -- CHANGED: Maintenance record remains if mechanic leaves
+        ON DELETE  RESTRICT,  -- CHANGED: Maintenance record remains if mechanic leaves
         
-    CHECK (completion_time IS NULL OR completion_time > starting_date)
+    CHECK (completion_time IS NULL OR completion_time > starting_date),
+
+    -- prevents duplicate maintenance types on same bus at same time
+    CONSTRAINT unique_maintenance_record UNIQUE (bus_id, maintenance_type_id, starting_date)
 );
 

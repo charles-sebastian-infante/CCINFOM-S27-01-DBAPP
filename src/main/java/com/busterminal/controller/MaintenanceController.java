@@ -306,6 +306,12 @@ public class MaintenanceController extends HttpServlet {
                 mechanicID = Integer.parseInt(mechanicIDStr);
             }
 
+            if (mechanicID == null) {
+                request.setAttribute("error", "Mechanic assignment is required");
+                showNewMaintenanceForm(request,response);
+                return;
+            }
+
             // Start transaction
             conn = DBConnection.getConnection();
             conn.setAutoCommit(false);
@@ -333,6 +339,33 @@ public class MaintenanceController extends HttpServlet {
                 request.setAttribute("error",
                         "Maintenance can only be performed on buses with 'Available' or 'Maintenance' status. " +
                                 "Current status: " + busStatus);
+                showNewMaintenanceForm(request, response);
+                return;
+            }
+
+            // 2a. VALIDATE MECHANIC REQUIRED AND CHECK FOR DUPLICATES
+            String startingDateTime = startingDateStr + " " + startingTimeStr + ":00";
+            Timestamp startingDate = Timestamp.valueOf(startingDateTime);
+            String duplicateCheckQuery = "SELECT COUNT(*) as count FROM Maintenance WHERE " +
+                    "bus_id = ? AND maintenance_type_id = ? AND starting_date = ?";
+
+            PreparedStatement duplicateCheckStmt = conn.prepareStatement(duplicateCheckQuery);
+            duplicateCheckStmt.setInt(1, busID);
+            duplicateCheckStmt.setInt(2, maintenanceTypeID);
+            duplicateCheckStmt.setTimestamp(3, startingDate);
+
+            ResultSet duplicateRs = duplicateCheckStmt.executeQuery();
+            boolean isDuplicate = false;
+            if (duplicateRs.next()) {
+                isDuplicate = duplicateRs.getInt("count") > 0;
+            }
+            duplicateRs.close();
+            duplicateCheckStmt.close();
+
+            if (isDuplicate) {
+                conn.rollback();
+                request.setAttribute("error",
+                        "A maintenance record already exists for this maintenance type on this bus at this date/time.");
                 showNewMaintenanceForm(request, response);
                 return;
             }
@@ -390,8 +423,8 @@ public class MaintenanceController extends HttpServlet {
             }
 
             // 4. CREATE MAINTENANCE RECORD
-            String startingDateTime = startingDateStr + " " + startingTimeStr + ":00";
-            Timestamp startingDate = Timestamp.valueOf(startingDateTime);
+            startingDateTime = startingDateStr + " " + startingTimeStr + ":00";
+            startingDate = Timestamp.valueOf(startingDateTime);
 
             PreparedStatement insertStmt = conn.prepareStatement(
                     "INSERT INTO Maintenance (bus_id, maintenance_type_id, assigned_mechanic, starting_date) " +
@@ -400,11 +433,7 @@ public class MaintenanceController extends HttpServlet {
 
             insertStmt.setInt(1, busID);
             insertStmt.setInt(2, maintenanceTypeID);
-            if (mechanicID != null) {
-                insertStmt.setInt(3, mechanicID);
-            } else {
-                insertStmt.setNull(3, Types.INTEGER);
-            }
+            insertStmt.setInt(3, mechanicID);
             insertStmt.setTimestamp(4, startingDate);
 
             int result = insertStmt.executeUpdate();
