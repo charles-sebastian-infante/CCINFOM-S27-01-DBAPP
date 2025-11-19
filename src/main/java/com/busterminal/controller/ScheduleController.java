@@ -1037,13 +1037,15 @@ public class ScheduleController extends HttpServlet {
 
                 String newStatus = null;
 
-                // Check if schedule should be marked as Departed
-                if ("Scheduled".equals(currentStatus) && currentTime.after(departureTime)) {
-                    newStatus = "Departed";
-                }
-                // Check if schedule should be marked as Completed
-                else if ("Departed".equals(currentStatus) && currentTime.after(arrivalTime)) {
+                // Check if schedule should be marked as Completed FIRST (both times passed)
+                // This handles the case where historical data is loaded with both times in the
+                // past
+                if (currentTime.after(arrivalTime)) {
                     newStatus = "Completed";
+                }
+                // Check if schedule should be marked as Departed (only departure time passed)
+                else if ("Scheduled".equals(currentStatus) && currentTime.after(departureTime)) {
+                    newStatus = "Departed";
                 }
 
                 // If status needs to change, add to update list
@@ -1071,49 +1073,88 @@ public class ScheduleController extends HttpServlet {
                 if (schedule.modRecord() == 1) {
                     System.out
                             .println("Successfully updated schedule " + schedule.scheduleID + " to " + schedule.status);
-
-                    // Update bus status
-                    Bus bus = new Bus();
-                    bus.busID = schedule.busID;
-                    if (bus.getRecord() == 1) {
-                        String newBusStatus = null;
-
-                        if ("Departed".equals(schedule.status)) {
-                            newBusStatus = "In Transit";
-                        } else if ("Completed".equals(schedule.status)) {
-                            // Check if bus has other active schedules
-                            PreparedStatement activeCheck = conn.prepareStatement(
-                                    "SELECT COUNT(*) as active_count FROM Schedule " +
-                                            "WHERE bus_id = ? AND status IN ('Scheduled', 'Departed') " +
-                                            "AND schedule_id != ?");
-                            activeCheck.setInt(1, bus.busID);
-                            activeCheck.setInt(2, schedule.scheduleID);
-                            ResultSet activeRs = activeCheck.executeQuery();
-
-                            int activeCount = 0;
-                            if (activeRs.next()) {
-                                activeCount = activeRs.getInt("active_count");
-                            }
-                            activeRs.close();
-                            activeCheck.close();
-
-                            // Only set to Available if no other active schedules
-                            if (activeCount == 0) {
-                                newBusStatus = "Available";
-                            }
-                        }
-
-                        if (newBusStatus != null) {
-                            bus.status = newBusStatus;
-                            bus.modRecord();
-                            System.out.println(
-                                    "Updated bus " + bus.busID + " (" + bus.busNumber + ") to " + newBusStatus);
-                        }
-                    }
                 } else {
                     System.out.println("Failed to update schedule " + schedule.scheduleID);
                 }
             }
+
+            // Sync all bus statuses based on their current schedules
+            // This ensures buses are correctly marked as Scheduled/In Transit/Available
+            PreparedStatement busStatusStmt = conn.prepareStatement(
+                    "SELECT DISTINCT bus_id FROM Schedule WHERE status IN ('Scheduled', 'Departed')");
+            ResultSet busRs = busStatusStmt.executeQuery();
+
+            List<Integer> activeBusIDs = new ArrayList<>();
+            while (busRs.next()) {
+                activeBusIDs.add(busRs.getInt("bus_id"));
+            }
+            busRs.close();
+            busStatusStmt.close();
+
+            // Update buses with active schedules
+            for (int busID : activeBusIDs) {
+                PreparedStatement scheduleCheckStmt = conn.prepareStatement(
+                        "SELECT status FROM Schedule " +
+                                "WHERE bus_id = ? AND status IN ('Scheduled', 'Departed') " +
+                                "ORDER BY departure_time ASC LIMIT 1");
+                scheduleCheckStmt.setInt(1, busID);
+                ResultSet schedRs = scheduleCheckStmt.executeQuery();
+
+                String newBusStatus = null;
+                if (schedRs.next()) {
+                    String scheduleStatus = schedRs.getString("status");
+                    if ("Departed".equals(scheduleStatus)) {
+                        newBusStatus = "In Transit";
+                    } else if ("Scheduled".equals(scheduleStatus)) {
+                        newBusStatus = "Scheduled";
+                    }
+                }
+                schedRs.close();
+                scheduleCheckStmt.close();
+
+                if (newBusStatus != null) {
+                    Bus bus = new Bus();
+                    bus.busID = busID;
+                    if (bus.getRecord() == 1) {
+                        // Only update if status actually changed
+                        if (!newBusStatus.equals(bus.status)) {
+                            bus.status = newBusStatus;
+                            bus.modRecord();
+                            System.out.println(
+                                    "Synced bus " + bus.busID + " (" + bus.busNumber + ") to " + newBusStatus);
+                        }
+                    }
+                }
+            }
+
+            // Set buses with no active schedules to Available (if not in maintenance or out
+            // of
+            // order)
+            PreparedStatement allBusesStmt = conn
+                    .prepareStatement("SELECT bus_id FROM Bus WHERE status NOT IN ('Maintenance', 'Out of Order')");
+            ResultSet allBusesRs = allBusesStmt.executeQuery();
+
+            while (allBusesRs.next()) {
+                int busID = allBusesRs.getInt("bus_id");
+
+                // If bus is not in the active list, it should be Available
+                if (!activeBusIDs.contains(busID)) {
+                    Bus bus = new Bus();
+                    bus.busID = busID;
+                    if (bus.getRecord() == 1) {
+                        if (!"Available".equals(bus.status) &&
+                                !"Maintenance".equals(bus.status) &&
+                                !"Out of Order".equals(bus.status)) {
+                            bus.status = "Available";
+                            bus.modRecord();
+                            System.out.println(
+                                    "Synced bus " + bus.busID + " (" + bus.busNumber + ") to Available");
+                        }
+                    }
+                }
+            }
+            allBusesRs.close();
+            allBusesStmt.close();
 
             conn.close();
 
