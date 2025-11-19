@@ -53,9 +53,10 @@ public class ScheduleController extends HttpServlet {
     private void listSchedules(HttpServletRequest request,
             HttpServletResponse response) throws ServletException, IOException {
         try {
-            // First, update all schedules based on current time
-            System.out.println("INFO: Updating schedule statuses...");
+            // First, update all schedules and maintenance statuses based on current time
+            System.out.println("INFO: Updating schedule and maintenance statuses...");
             updateScheduleStatuses();
+            com.busterminal.controller.MaintenanceController.updateMaintenanceStatuses();
 
             Connection conn = DBConnection.getConnection();
 
@@ -447,6 +448,55 @@ public class ScheduleController extends HttpServlet {
                 request.getRequestDispatcher("/admin/manage_schedules.jsp")
                         .forward(request, response);
                 return;
+            }
+
+            // 4a. CHECK FOR MAINTENANCE SCHEDULED ON THE SAME DAY
+            Connection tempConn = null;
+            try {
+                tempConn = DBConnection.getConnection();
+                PreparedStatement maintenanceCheckStmt = tempConn.prepareStatement(
+                        "SELECT COUNT(*) as maintenance_count FROM Maintenance " +
+                                "WHERE bus_id = ? AND completion_time IS NULL " +
+                                "AND (DATE(starting_date) = DATE(?) OR DATE(starting_date) = DATE(?))");
+                maintenanceCheckStmt.setInt(1, busID);
+                maintenanceCheckStmt.setTimestamp(2, departure);
+                maintenanceCheckStmt.setTimestamp(3, arrival);
+                ResultSet maintenanceRs = maintenanceCheckStmt.executeQuery();
+
+                if (maintenanceRs.next() && maintenanceRs.getInt("maintenance_count") > 0) {
+                    int maintenanceCount = maintenanceRs.getInt("maintenance_count");
+                    maintenanceRs.close();
+                    maintenanceCheckStmt.close();
+
+                    validationErrors.put("general",
+                            String.format(
+                                    "Cannot create schedule. Bus has %d maintenance(s) scheduled on the same day. " +
+                                            "Please choose a different date or complete/reschedule the maintenance first.",
+                                    maintenanceCount));
+
+                    List<Bus> availableBuses = getAvailableBuses();
+                    List<Route> routes2 = Route.getAllRoutes();
+
+                    request.setAttribute("validationErrors", validationErrors);
+                    request.setAttribute("buses", availableBuses);
+                    request.setAttribute("routes", routes2);
+                    request.setAttribute("busID", busIDStr);
+                    request.setAttribute("routeID", routeIDStr);
+                    request.setAttribute("departureDate", departureDate);
+                    request.setAttribute("departureTime", departureTime);
+                    request.setAttribute("arrivalDate", arrivalDate);
+                    request.setAttribute("arrivalTime", arrivalTime);
+
+                    request.getRequestDispatcher("/admin/manage_schedules.jsp")
+                            .forward(request, response);
+                    return;
+                }
+                maintenanceRs.close();
+                maintenanceCheckStmt.close();
+            } finally {
+                if (tempConn != null) {
+                    tempConn.close();
+                }
             }
 
             // 4.2. CHECK BUS CURRENT TERMINAL MATCHES ROUTE ORIGIN
