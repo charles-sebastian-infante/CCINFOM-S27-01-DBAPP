@@ -160,8 +160,8 @@ if (edit != null) {
                 </label><br><br>
 
                 <label>Mechanic:<br>
-                    <select name="mechanicID">
-                        <option value="">-- Optional --</option>
+                    <select name="mechanicID" required>
+                        <option value="">-- Select --</option>
                         <% if (mechanicsForCreate != null) {
                         for (Staff mechanic : mechanicsForCreate) { %>
                         <option value="<%= mechanic.staffID %>">
