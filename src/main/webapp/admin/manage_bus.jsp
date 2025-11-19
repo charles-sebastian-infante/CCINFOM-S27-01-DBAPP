@@ -128,7 +128,6 @@
                 <label>Status:<br>
                     <select name="status" required>
                         <option value="Available">Available</option>
-                        <option value="Maintenance">Maintenance</option>
                     </select>
                 </label><br><br>
 
