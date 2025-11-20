@@ -9,7 +9,7 @@ A database application for managing bus terminal operations including ticket sal
 **Course:** CCINFOM Database Application Project  
 **Academic Year:** 2025-2026, Term 1  
 **Institution:** De La Salle University  
-**Current Status:** Proposal Approved - Development Phase
+**Current Status:** Proposal Approved, Submitted
 
 ## Team Members
 
@@ -70,29 +70,136 @@ Based on our approved proposal, this system will address the limitations of Exce
 - [X] Development environment setup
 - [X] Database design and creation
 - [X] Sample data population (minimum 10 records per table)
-
-### In Progress
-- [ ] Core record management implementation
-- [ ] Transaction development
-- [ ] Report generation features
-- [ ] UI development and integration
-- [ ] Testing and debugging
+- [X] Core record management implementation
+- [X] Transaction development
+- [X] Report generation features
+- [X] UI development and integration
+- [X] Testing and debugging
 
 ## Getting Started
 
-**Note: Setup instructions will be added as technology decisions are finalized**
+### Prerequisite Downloads
+- Apache Tomcat 9
+- MySQL
+- JDK Version 21 or Higher
+- IntelliJ IDEA (Highly Recommended)
+
+### Setup Instructions
+*Note: This setup instruction assumes you have the IntelliJ IDEA IDE.*
+
+1. Clone the repository
+```bash
+git clone https://github.com/charles-sebastian-infante/CCINFOM-S27-01-DBAPP.git
+cd CCINFOM-S27-01-DBAPP
+```
+
+2. Set up database
+- Create a MySQL Database named bus_terminal_management
+- Run `bus_terminal_database.sql` (located in `sql/`)
+- Configure `DBConnection.java` (located in `src/main/java/com.busterminal/utils`)
+
+```
+URL = "{your jdbc connection here}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+USER = "{your username}";
+PASSWORD = "{your password}";
+```
+3. Download the "Smart Tomcat" plugin for IntelliJ IDEA
+
+4. Configure Smart Tomcat run instructions 
+
+```
+Tomcat server: {your tomcat folder}
+Deployment directory : {/src/main/webapp}
+Use classpath of module: {this directory}
+```
 
 ### Current Repository Structure
 ```
-bus-terminal-management/
-├── docs/
-│   └── proposal.md          # Approved project proposal
-├── .gitignore              # Git ignore rules
-└── README.md               # This file
+CCINFOM-S27-01-DBAPP/
+├── sql/                                # Database scripts
+│   ├── bus_terminal_database.sql       # Main database schema
+│   ├── dbapp_dummy_data.sql            # Sample data (version 1)
+│   ├── dbapp_dummy_data_2.sql          # Sample data (version 2)
+│   └── incomplete db.sql               # Work in progress
+│
+├── src/main/
+│   ├── java/com/busterminal/           # Java source code
+│   │   ├── controller/                 # Controllers
+│   │   │   ├── BusController.java
+│   │   │   ├── MaintenanceController.java
+│   │   │   ├── ReportController.java
+│   │   │   ├── RouteController.java
+│   │   │   ├── ScheduleController.java
+│   │   │   ├── StaffController.java
+│   │   │   ├── TerminalController.java
+│   │   │   └── TicketController.java
+│   │   │
+│   │   ├── model/                      # Data models
+│   │   │   ├── Bus.java
+│   │   │   ├── Maintenance.java
+│   │   │   ├── MaintenanceType.java
+│   │   │   ├── Role.java
+│   │   │   ├── Route.java
+│   │   │   ├── Schedule.java
+│   │   │   ├── Staff.java
+│   │   │   ├── Terminal.java
+│   │   │   └── Ticket.java
+│   │   │
+│   │   ├── service/                    # Business logic services
+│   │   │   ├── BusDepartureService.java
+│   │   │   ├── BusMaintenanceAssignment.java
+│   │   │   ├── ReportService.java
+│   │   │   ├── ScheduleService.java
+│   │   │   ├── StaffReassignmentService.java
+│   │   │   ├── TicketCancellation.java
+│   │   │   └── TicketPurchaseService.java
+│   │   │
+│   │   └── utils/                      # Utility classes
+│   │       └── DBConnection.java
+│   │
+│   └── webapp/                         # Web application files
+│       ├── admin/                      # Admin management pages
+│       │   ├── maintenance_list.jsp
+│       │   ├── manage_bus.jsp
+│       │   ├── manage_reports.jsp
+│       │   ├── manage_routes.jsp
+│       │   ├── manage_schedules.jsp
+│       │   ├── manage_staff.jsp
+│       │   ├── manage_terminals.jsp
+│       │   └── tickets.jsp
+│       │
+│       ├── style/                      # CSS stylesheets
+│       │   ├── global.css
+│       │   ├── index.css
+│       │   ├── maintenance.css
+│       │   ├── manage_bus.css
+│       │   ├── manage_reports.css
+│       │   ├── manage_routes.css
+│       │   ├── manage_schedules.css
+│       │   ├── manage_staff.css
+│       │   ├── manage_terminals.css
+│       │   └── tickets.css
+│       │
+│       ├── index.jsp                  # Home page
+│       ├── test-db.jsp                # Database connection test
+│       └── WEB-INF/
+│           └── web.xml                # Web application deployment descriptor
+│
+├── docs/                               # Documentation
+│   └── approved-proposal.md            # Project proposal
+│
+├── build.gradle                        # Gradle build configuration
+├── gradle.properties                   # Gradle properties
+├── gradlew                             # Gradle wrapper script (Unix)
+├── gradlew.bat                         # Gradle wrapper script (Windows)
+├── settings.gradle                     # Gradle settings
+├── README.md                           # Project README
+├── mysql-connector-java-8.0.13.jar     # MySQL JDBC driver
+└── .git                                # Git repository (branch: main)
 ```
 
 ### Next Steps for Team
-1. **Week 8+:** Begin implementation according to proposal
+N/A
 
 ## Development Guidelines
 
@@ -131,9 +238,7 @@ Each member is assigned specific components as per the approved proposal. See pr
 ## Documentation
 
 - [Completed] Project Proposal (docs/proposal.md) - Approved by Professor Francia
-- [Coming Soon] Database Design (docs/database-design.md)
-- [Coming Soon] API Documentation (docs/api-reference.md)
-- [Coming Soon] User Manual (docs/user-manual.md)
+- [Completed] Database Design (docs/database-schema.png)
 
 ## Project Timeline
 
@@ -145,11 +250,11 @@ Each member is assigned specific components as per the approved proposal. See pr
 
 ## Notes
 
-**Project Status:** The team has begun with developing the app. The backend has been slightly refactored and frontend for the most part needs styling.
+**Project Status:** The initial project has been accomplished on time.
 
 For the most up-to-date project requirements, refer to the approved proposal document and any additional feedback from Professor Francia.
 
 ---
 
 **Last Updated:** November 2025  
-**Project Status:** In Development
+**Project Status:** Project has been submitted to Professor Francia. Subject to grading.
