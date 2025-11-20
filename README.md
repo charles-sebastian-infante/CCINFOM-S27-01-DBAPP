@@ -44,8 +44,8 @@ Based on our approved proposal, this system will address the limitations of Exce
 
 ### Planned Reports
 - Scheduled trips dashboard
-- Route usage analysis (monthly/yearly)
-- Bus maintenance summary (monthly)
+- Route usage analysis 
+- Bus maintenance summary
 - Bus utilization tracking
 
 ## Technology Stack
@@ -88,14 +88,14 @@ Based on our approved proposal, this system will address the limitations of Exce
 *Note: This setup instruction assumes you have the IntelliJ IDEA IDE.*
 
 1. Clone the repository
-```bash
+```
 git clone https://github.com/charles-sebastian-infante/CCINFOM-S27-01-DBAPP.git
 cd CCINFOM-S27-01-DBAPP
 ```
 
 2. Set up database
 - Create a MySQL Database named bus_terminal_management
-- Run `bus_terminal_database.sql` (located in `sql/`)
+- Run `bus_terminal_database.sql` and `dbapp_dummy_data_2.sql` (located in `sql/`)
 - Configure `DBConnection.java` (located in `src/main/java/com.busterminal/utils`)
 
 ```
@@ -105,13 +105,14 @@ PASSWORD = "{your password}";
 ```
 3. Download the "Smart Tomcat" plugin for IntelliJ IDEA
 
-4. Configure Smart Tomcat run instructions 
-
+4. Configure Smart Tomcat instructions 
 ```
 Tomcat server: {your tomcat folder}
 Deployment directory : {/src/main/webapp}
 Use classpath of module: {this directory}
 ```
+
+5. Copy the MySQL JAR connector
 
 ### Current Repository Structure
 ```
@@ -186,7 +187,8 @@ CCINFOM-S27-01-DBAPP/
 │           └── web.xml                # Web application deployment descriptor
 │
 ├── docs/                               # Documentation
-│   └── approved-proposal.md            # Project proposal
+|   ├── approved-proposal.md            # Project proposal                         
+│   └── database-schema.md              # Entity-Relation diagram
 │
 ├── build.gradle                        # Gradle build configuration
 ├── gradle.properties                   # Gradle properties
@@ -250,11 +252,11 @@ Each member is assigned specific components as per the approved proposal. See pr
 
 ## Notes
 
-**Project Status:** The initial project has been accomplished on time.
+**Project Status:** The initial project has been accomplished.
 
 For the most up-to-date project requirements, refer to the approved proposal document and any additional feedback from Professor Francia.
 
 ---
 
 **Last Updated:** November 2025  
-**Project Status:** Project has been submitted to Professor Francia. Subject to grading.
+**Project Status:** Project has been submitted to Professor Francia. Subject for evaluation.
